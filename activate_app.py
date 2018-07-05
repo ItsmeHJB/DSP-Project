@@ -1666,7 +1666,17 @@ def test_accuracy_chart():
 
 
 
+def shutdown_server():
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    func()
 
+@app.route('/shutdown')
+def shutdown():
+    shutdown_server()
+    output = 'Server shutting down...'
+    return output
 
 
 @app.route("/")
