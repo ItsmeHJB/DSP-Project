@@ -1,0 +1,5 @@
+samples,single,inferred,imageaugment,confaugment,userlabels
+10,25,58,24,27,10
+20,23,63,28,28,8
+30,31,0,42,40,6
+40,35,0,55,56,8

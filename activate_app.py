@@ -1148,6 +1148,17 @@ def update_label():
             print ("file_id:", file_id)
             print ("oo.pca_distances[file_id,:]", oo.pca_distances[file_id,:])
 
+            print( "==>image id {}, label {}, confidence {} ".format(file_id, int(new_label),user_confidence ))
+            #create confidence file with header row if it does not already exist
+            #output confidence details to file
+            if ( os.path.isfile('confidences.txt') ==False):
+                with open('confidences.txt','w') as thefile:
+                    print('ImageId,Label,Confidence',file=thefile)
+                    print( "{}, {}, {} ".format(file_id, int(new_label),user_confidence), file=thefile)
+            else:            
+                with open('confidences.txt','a') as thefile:
+                    print( "{}, {}, {} ".format(file_id, int(new_label),user_confidence), file=thefile)
+
         output['total_samples'] = str(oo.x_train.shape[0])
         return json.dumps(output)
 
