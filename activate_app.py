@@ -889,9 +889,15 @@ def keras_convnet(state, X_train, Y_train, file_set):
     print('Test loss:', score[0])
     print('Test accuracy:', score[1])
 
+    predict_vals = []
+    actual_vals = []
+    for i in range(Y_test.shape[0]):
+        actual_vals.append( np.argmax(Y_test[i]) )
+        predict = model.predict(X_test[i].reshape(-1, img_rows, img_cols, 1))
 
-    #outputs = [layer.output for layer in model.layers]
-    #print (outputs)
+        predict_vals.append( np.argmax(predict[0]) )
+    generate_confusion_matrix(predict_vals, actual_vals)
+
 
     #### Simple way to get the output layer of network, and the predicted label
     print ("Actual -- Label:", np.argmax(Y_test[0]), "Values:", Y_test[0])
