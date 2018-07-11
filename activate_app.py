@@ -563,8 +563,8 @@ def keras_current_convnet_model_prediction(sample_batch):
 
     print ("Sample to run current model on ", oo.temp_test.shape)
 
-    model = model_from_json(open('keras_models/convnet_model.json').read())
-    model.load_weights('keras_models/convnet_model_weights.h5')
+    model = model_from_json(open(oo.keras_model_filename[oo.model_to_load_from]).read())
+    model.load_weights(oo.keras_weights_filename[oo.model_to_load_from])
 
     node_data = []
 
@@ -722,7 +722,11 @@ def keras_logreg(state, X_train, Y_train, file_set):
     print ("y_test", Y_test.shape)
 
 
-    model = build_logistic_model(input_dim, nb_classes)
+    if state > 0:
+        model = model_from_json(open(oo.keras_model_filename[file_set]).read())
+        model.load_weights(oo.keras_weights_filename[file_set])
+    else:
+        model = build_logistic_model(input_dim, nb_classes)
 
     model.summary()
 
@@ -796,7 +800,13 @@ def keras_logreg_predicted_labels(state, input_data, output_labels, file_set):
     print ("y_test", Y_test.shape)
 
 
-    model = build_logistic_model(input_dim, nb_classes)
+    
+
+    if state > 0:
+        model = model_from_json(open(oo.keras_model_filename[file_set]).read())
+        model.load_weights(oo.keras_weights_filename[file_set])
+    else:
+        model = build_logistic_model(input_dim, nb_classes)
 
     model.summary()
 
@@ -870,7 +880,11 @@ def keras_convnet(state, X_train, Y_train, file_set):
     print ("y_test", Y_test.shape)
 
     
-    model = build_convnet_model(input_dim_convnet, nb_classes)
+    if state > 0:
+        model = model_from_json(open(oo.keras_model_filename[file_set]).read())
+        model.load_weights(oo.keras_weights_filename[file_set])
+    else:
+        model = build_convnet_model(input_dim_convnet, nb_classes)
 
     model.summary()
 
@@ -953,7 +967,14 @@ def keras_convnet_predicted_labels(state, input_data, output_labels, file_set):
     print ("y_test", Y_test.shape)
 
     
-    model = build_convnet_model(input_dim_convnet, nb_classes)
+    
+
+    if state > 0:
+        model = model_from_json(open(oo.keras_model_filename[file_set]).read())
+        model.load_weights(oo.keras_weights_filename[file_set])
+    else:
+        model = build_convnet_model(input_dim_convnet, nb_classes)
+
 
     model.summary()
 
