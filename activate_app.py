@@ -1524,6 +1524,8 @@ def distance_select():
     if value == 'orig_dim':
         oo.sample_selection_method = 'distance'
         oo.use_dimensional_reduction_mode = False
+    elif value == 'random':
+        oo.sample_selection_method = 'random'
     elif value == 'reduce_dim':
         oo.sample_selection_method = 'distance'
         oo.use_dimensional_reduction_mode = True
@@ -1531,8 +1533,16 @@ def distance_select():
         oo.sample_selection_method = 'confidence'
     elif value == 'confidence_distance':
         oo.sample_selection_method = 'confidence_distance'
-    elif value == 'random':
-        oo.sample_selection_method = 'random'
+    elif value == 'confidence_marginal_distance':
+        oo.sample_selection_method = 'confidence_marginal_distance'
+    elif value == 'confidence_marginal_random':
+        oo.sample_selection_method = 'confidence_marginal_random'
+    elif value == 'confidence_entropy_distance':
+        oo.sample_selection_method = 'confidence_entropy_distance'
+    elif value == 'confidence_entropy_random':
+        oo.sample_selection_method = 'confidence_entropy_random'
+
+
     print ("oo.use_dimensional_reduction_mode", oo.use_dimensional_reduction_mode)
     print ("oo.sample_selection_method", oo.sample_selection_method)
     output = {'result':'done'}
@@ -1625,9 +1635,12 @@ def sample_selection_method():
 def machine_predict_select():
     value = request.args.get('machine_predict_select')
     oo.model_to_load_from = int(value)
+
+    print ("machine_predict_select set to: ", value)
     print (oo.model_to_load_from)
     print (oo.keras_model_filename[oo.model_to_load_from])
     print (oo.keras_weights_filename[oo.model_to_load_from])
+
     output = {'result': 'done', 'value': value}
     return json.dumps(output)
 
