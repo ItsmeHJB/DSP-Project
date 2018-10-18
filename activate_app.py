@@ -10,6 +10,7 @@ import json
 import keras
 #import matplotlib.pyplot as plt
 import numpy as np
+import scipy as sp
 import pandas as pd
 import os
 import random as rand
@@ -231,7 +232,7 @@ def getRandomTrainBatch(size):
     else:
         return sample_ref
 
-def getConfidenceTrainBatch(size):
+def getConfidenceRandomTrainBatch(size, method_of_conf_select='least_confidence'):
     sample_ref = []
     sample_ref_temp = []
 
@@ -265,32 +266,75 @@ def getConfidenceTrainBatch(size):
             node_data = keras_current_model_prediction(sample_ref_temp)
         elif oo.use_convnet == 'kerasconvnet':
             node_data = keras_current_convnet_model_prediction(sample_ref_temp)
+        
         conf_values = []
         image_values = []
-        for nd in range(len(node_data)):
-            #print (nd)
-            #print ("node_data:", node_data[nd])
-            #print ("node_data:", node_data[nd]['confidence'])
-            conf_values.append(node_data[nd]['confidence'])
-        conf_values = np.array(conf_values)
-        indexes = conf_values.argsort()[:size]
         nd = []
 
-        print ("indexes:", indexes)
+        if method_of_conf_select == 'least_confidence':
+            for n in range(len(node_data)):
+                #print (n)
+                #print ("node_data:", node_data[n])
+                #print ("predictions:", node_data[n]['predictions'])
+                print ("confidence:", node_data[n]['confidence'])
+                conf_values.append(node_data[n]['confidence'])
+            conf_values = np.array(conf_values)
+            indexes = conf_values.argsort()[:size]
+            print ("indexes:", indexes)
+            for i in range(len(indexes)):
+                obj = node_data[indexes[i]]
+                nd.append(obj)
+                oo.point_select, oo.pca_distances_working_copy, this_index = select_point(oo.point_select, oo.pca_distances_working_copy, obj['id'])
+        elif method_of_conf_select == 'marginal_confidence':
+            for n in range(len(node_data)):
 
-        for i in range(len(indexes)):
-            obj = node_data[indexes[i]]
-            nd.append(obj)
-            oo.point_select, oo.pca_distances_working_copy, this_index = select_point(oo.point_select, oo.pca_distances_working_copy, obj['id'])
+                preds = node_data[n]['predictions']
+                preds = np.sort(preds)
+                print("Predicted values: ", preds)
+                marginal = np.abs( preds[len(preds)-1] - preds[len(preds)-2] ) 
+                print ("Marginal value: ", marginal)
+                #print (n)
+                #print ("node_data:", node_data[n])
+                #print ("predictions:", node_data[n]['predictions'])
+                #print ("confidence:", node_data[n]['confidence'])
+                conf_values.append(marginal)
+
+            conf_values = np.array(conf_values)
+            indexes = conf_values.argsort()[:]
+            indexes = np.flip(indexes,0)
+            indexes = indexes[:size]
+            print ("indexes:", indexes)
+            for i in range(len(indexes)):
+                obj = node_data[indexes[i]]
+                nd.append(obj)
+                oo.point_select, oo.pca_distances_working_copy, this_index = select_point(oo.point_select, oo.pca_distances_working_copy, obj['id'])
+        elif method_of_conf_select == 'entropy_confidence':
+            for n in range(len(node_data)):
+                print (n)
+
+                entropy = sp.stats.entropy(node_data[n]['predictions'])
+                #print ("node_data:", node_data[n])
+                print ("predictions:", node_data[n]['predictions'])
+                print ("entropy:", entropy)
+                #print ("confidence:", node_data[n]['confidence'])
+                conf_values.append(entropy)
+
+            conf_values = np.array(conf_values)
+            indexes = conf_values.argsort()[:]
+            indexes = np.flip(indexes,0)
+            indexes = indexes[:size]
+
+            print ("indexes:", indexes)
+            for i in range(len(indexes)):
+                obj = node_data[indexes[i]]
+                nd.append(obj)
+                oo.point_select, oo.pca_distances_working_copy, this_index = select_point(oo.point_select, oo.pca_distances_working_copy, obj['id'])
         return nd
 
-def getConfidenceDistanceTrainBatch(size):
-    print ("getConfidenceDistanceTrainBatch")
+def getConfidenceDistanceTrainBatch(size, method_of_conf_select='least_confidence'):
     sample_ref = []
     sample_ref_temp = []
-
     distance_size = 10 #size
-
     if oo.batch_total == 0:
         counter = 0
         while (counter < size):
@@ -314,41 +358,100 @@ def getConfidenceDistanceTrainBatch(size):
             if sample not in oo.all_selected_filenames:
                 sample_ref_temp.append( sample )
                 counter += 1
-
         #print ("oo.point_select.shape: ", oo.point_select.shape)
         #print ("oo.pca_distances_working_copy: ", oo.pca_distances_working_copy.shape)
         #print ("temp_point_select.shape: ", temp_point_select.shape)
         #print ("temp_pca_distances_working_copy: ", temp_pca_distances_working_copy.shape)
-
         if oo.use_convnet == 'keraslogreg':
             node_data = keras_current_model_prediction(sample_ref_temp)
         elif oo.use_convnet == 'kerasconvnet':
             node_data = keras_current_convnet_model_prediction(sample_ref_temp)
         conf_values = []
         image_values = []
-        for nd in range(len(node_data)):
-            #print (nd)
-            #print ("node_data:", node_data[nd])
-            #print ("node_data:", node_data[nd]['confidence'])
-            conf_values.append(node_data[nd]['confidence'])
-        conf_values = np.array(conf_values)
-        indexes = conf_values.argsort()[:size]
+
+
+        ####  THIS IS THE KEY BIT THAT WILL DIFFER FOR THE CONFIDENCE METHODS - 
+        ## DO WE TAKE THE LEAST-CONFIDENT, THE CASES WHERE THE MARGINAL CONF IS SMALLEST, OR WHERE THE ENTROPY OF CONFS IS HIGH?
+
         nd = []
 
-        print ("indexes:", indexes)
+        if method_of_conf_select == 'least_confidence':
 
-        print ("Size of oo.point_select before: ", oo.point_select.shape)
-        print ("Size of oo.pca_distances_working_copy before: ", oo.pca_distances_working_copy.shape)
+            for n in range(len(node_data)):
+                #print (n)
+                #print ("node_data:", node_data[n])
+                #print ("predictions:", node_data[n]['predictions'])
+                print ("confidence:", node_data[n]['confidence'])
+                conf_values.append(node_data[n]['confidence'])
 
-        for i in range(len(indexes)):
-            obj = node_data[indexes[i]]
-            nd.append(obj)
-            oo.point_select, oo.pca_distances_working_copy, this_index = select_point(oo.point_select, oo.pca_distances_working_copy, obj['id'])
+            conf_values = np.array(conf_values)
+            indexes = conf_values.argsort()[:size]
+            print ("indexes:", indexes)
+            print ("Size of oo.point_select before: ", oo.point_select.shape)
+            print ("Size of oo.pca_distances_working_copy before: ", oo.pca_distances_working_copy.shape)
+            for i in range(len(indexes)):
+                obj = node_data[indexes[i]]
+                nd.append(obj)
+                oo.point_select, oo.pca_distances_working_copy, this_index = select_point(oo.point_select, oo.pca_distances_working_copy, obj['id'])
+            print ("Size of oo.point_select after: ", oo.point_select.shape)
+            print ("Size of oo.pca_distances_working_copy after: ", oo.pca_distances_working_copy.shape)
 
+        elif method_of_conf_select == 'marginal_confidence':
+            for n in range(len(node_data)):
 
-        
-        print ("Size of oo.point_select after: ", oo.point_select.shape)
-        print ("Size of oo.pca_distances_working_copy after: ", oo.pca_distances_working_copy.shape)
+                preds = node_data[n]['predictions']
+                preds = np.sort(preds)
+                print("Predicted values: ", preds)
+
+                marginal = np.abs( preds[len(preds)-1] - preds[len(preds)-2] ) 
+                print ("Marginal value: ", marginal)
+                #print (n)
+                #print ("node_data:", node_data[n])
+                #print ("predictions:", node_data[n]['predictions'])
+                #print ("confidence:", node_data[n]['confidence'])
+
+                conf_values.append(marginal)
+
+            conf_values = np.array(conf_values)
+            indexes = conf_values.argsort()[:]
+            indexes = np.flip(indexes,0)
+            indexes = indexes[:size]
+            print ("indexes:", indexes)
+            print ("Size of oo.point_select before: ", oo.point_select.shape)
+            print ("Size of oo.pca_distances_working_copy before: ", oo.pca_distances_working_copy.shape)
+            for i in range(len(indexes)):
+                obj = node_data[indexes[i]]
+                nd.append(obj)
+                oo.point_select, oo.pca_distances_working_copy, this_index = select_point(oo.point_select, oo.pca_distances_working_copy, obj['id'])
+            print ("Size of oo.point_select after: ", oo.point_select.shape)
+            print ("Size of oo.pca_distances_working_copy after: ", oo.pca_distances_working_copy.shape)
+
+        elif method_of_conf_select == 'entropy_confidence':
+            for n in range(len(node_data)):
+                print (n)
+
+                entropy = sp.stats.entropy(node_data[n]['predictions'])
+                #print ("node_data:", node_data[n])
+                print ("predictions:", node_data[n]['predictions'])
+                print ("entropy:", entropy)
+                #print ("confidence:", node_data[n]['confidence'])
+                conf_values.append(entropy)
+
+            conf_values = np.array(conf_values)
+            indexes = conf_values.argsort()[:]
+            indexes = np.flip(indexes,0)
+            indexes = indexes[:size]
+
+            print ("indexes:", indexes)
+            print ("Size of oo.point_select before: ", oo.point_select.shape)
+            print ("Size of oo.pca_distances_working_copy before: ", oo.pca_distances_working_copy.shape)
+            for i in range(len(indexes)):
+                obj = node_data[indexes[i]]
+                nd.append(obj)
+                oo.point_select, oo.pca_distances_working_copy, this_index = select_point(oo.point_select, oo.pca_distances_working_copy, obj['id'])
+            print ("Size of oo.point_select after: ", oo.point_select.shape)
+            print ("Size of oo.pca_distances_working_copy after: ", oo.pca_distances_working_copy.shape)
+
         return nd
 
 def computeTsneAndPcaDistances():
@@ -1073,9 +1176,17 @@ def get_samples():
     elif oo.sample_selection_method == 'distance':
         object_list = getDistanceTrainBatch(int(oo.batch_size))
     elif oo.sample_selection_method == 'confidence':
-        object_list = getConfidenceTrainBatch(int(oo.batch_size))
+        object_list = getConfidenceRandomTrainBatch(int(oo.batch_size), method_of_conf_select='least_confidence')
     elif oo.sample_selection_method == 'confidence_distance':
-        object_list = getConfidenceDistanceTrainBatch(int(oo.batch_size))
+        object_list = getConfidenceDistanceTrainBatch(int(oo.batch_size), method_of_conf_select='least_confidence')
+    elif oo.sample_selection_method == 'confidence_marginal_random':
+        object_list = getConfidenceRandomTrainBatch(int(oo.batch_size), method_of_conf_select='marginal_confidence')
+    elif oo.sample_selection_method == 'confidence_marginal_distance':
+        object_list = getConfidenceDistanceTrainBatch(int(oo.batch_size), method_of_conf_select='marginal_confidence')
+    elif oo.sample_selection_method == 'confidence_entropy_random':
+        object_list = getConfidenceRandomTrainBatch(int(oo.batch_size), method_of_conf_select='entropy_confidence')
+    elif oo.sample_selection_method == 'confidence_entropy_distance':
+        object_list = getConfidenceDistanceTrainBatch(int(oo.batch_size), method_of_conf_select='entropy_confidence')
     print ("object list")
     for objs in object_list:
         print (objs)
