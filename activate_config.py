@@ -3,12 +3,11 @@ import numpy as np
 from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
-# from tensorflow.contrib.learn.python.learn.datasets.mnist import read_data_sets
-from tensorflow.keras import datasets, layers, models
+from tensorflow.contrib.learn.python.learn.datasets.mnist import read_data_sets
 
 from keras.datasets import cifar10
 from keras.datasets import mnist
-from keras.datasets import fashion_mnist
+# from keras.datasets import fashion_mnist
 
 from sys import platform
 
@@ -95,15 +94,14 @@ class Options:
         running_on_osx = False
 
     #### Can we get it working so that we cn drop in new datasets easily?
-    # (x_train, y_train), (x_test, y_test) = mnist.load_data()
-    # (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
-    # (x_train, y_train), (x_test, y_test) = cifar10.load_data()
+    #(x_train, y_train), (x_test, y_test) = mnist.load_data()
+    #(x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
+    #(x_train, y_train), (x_test, y_test) = cifar10.load_data()
 
     if running_on_osx:
         directory_for_test_images = "static/images/mnist_noclass/test"
         directory_for_train_images = "static/images/mnist_noclass/train"
         directory_for_trained_model = "logs/trained_logreg_model.ckpt"
-
 
         # mnist = read_data_sets("MNIST_data/", one_hot=True)
 
@@ -119,7 +117,8 @@ class Options:
         directory_for_train_images = "static\\images\\mnist_noclass\\train"
         directory_for_trained_model = "logs\\trained_logreg_model.ckpt"
 
-        # mnist = read_data_sets("MNIST_data\\", one_hot=True)
+        #mnist = mnist
+        mnist = read_data_sets("MNIST_data\\", one_hot=True)
 
         tsne_file = "distance_data\\tsne_distances.csv"
         pca_file = "distance_data\\pca_distances.csv"

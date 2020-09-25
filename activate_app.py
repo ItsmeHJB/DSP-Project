@@ -491,6 +491,8 @@ def computeTsneAndPcaDistances():
     # X VALUE, Y VALUE, ACTUAL LABEL, PREDICTED LABEL, USER LABEL
     X = np.array(oo.mnist.train.images)
     Y = np.array(oo.mnist.train.labels)
+    #X = np.array(oo.x_train)
+    #Y = np.array(oo.y_train)
     actual_labels = Y.argmax(axis=1).reshape([X.shape[0], 1])
     user_labels = np.ones([actual_labels.shape[0], 1]) * -1
     user_confidences = np.zeros([actual_labels.shape[0], 1])
