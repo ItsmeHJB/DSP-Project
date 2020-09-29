@@ -3,13 +3,30 @@ import numpy as np
 from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
-from tensorflow.contrib.learn.python.learn.datasets.mnist import read_data_sets
+# from tensorflow.contrib.learn.python.learn.datasets.mnist import read_data_sets
+from tensorflow import keras
 
-from keras.datasets import cifar10
-from keras.datasets import mnist
+# from keras.datasets import cifar10
+# from keras.datasets import mnist
 # from keras.datasets import fashion_mnist
 
 from sys import platform
+
+
+def get_label_array(argument):
+    switcher = {
+        0: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        1: [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        2: [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+        3: [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        4: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+        5: [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+        6: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+        7: [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+        8: [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+        9: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+    }
+    return switcher.get(argument)
 
 
 class Options:
@@ -94,9 +111,9 @@ class Options:
         running_on_osx = False
 
     #### Can we get it working so that we cn drop in new datasets easily?
-    #(x_train, y_train), (x_test, y_test) = mnist.load_data()
-    #(x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
-    #(x_train, y_train), (x_test, y_test) = cifar10.load_data()
+    # (x_train, y_train), (x_test, y_test) = mnist.load_data()
+    # (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
+    # (x_train, y_train), (x_test, y_test) = cifar10.load_data()
 
     if running_on_osx:
         directory_for_test_images = "static/images/mnist_noclass/test"
@@ -117,8 +134,31 @@ class Options:
         directory_for_train_images = "static\\images\\mnist_noclass\\train"
         directory_for_trained_model = "logs\\trained_logreg_model.ckpt"
 
-        #mnist = mnist
-        mnist = read_data_sets("MNIST_data\\", one_hot=True)
+        # Load mnist data set
+        (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
+        x_train, x_test = x_train / 255.0, x_test / 255.0
+
+        # Reshape
+        x_train = x_train.reshape(60000, 784)
+        x_test = x_test.reshape(10000, 784)
+
+        # Convert new style labels back to binary array of [0,9]
+        temp = []
+        for value in y_train:
+            temp.append(get_label_array(value))
+
+        y_train = np.array(temp)
+
+        del temp[:]
+        for value in y_test:
+            temp.append(get_label_array(value))
+
+        y_test = np.array(temp)
+
+        # mnist = read_data_sets("MNIST_data\\", one_hot=True)
+        # print(mnist.train.images[0])
+
+        # input("Press Enter to continue...")
 
         tsne_file = "distance_data\\tsne_distances.csv"
         pca_file = "distance_data\\pca_distances.csv"

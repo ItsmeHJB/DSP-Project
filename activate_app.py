@@ -489,11 +489,10 @@ def getConfidenceDistanceTrainBatch(size, method_of_conf_select='least_confidenc
 def computeTsneAndPcaDistances():
     # For each distance metric, we want a table that illustrates the following:
     # X VALUE, Y VALUE, ACTUAL LABEL, PREDICTED LABEL, USER LABEL
-    X = np.array(oo.mnist.train.images)
-    Y = np.array(oo.mnist.train.labels)
-    #X = np.array(oo.x_train)
-    #Y = np.array(oo.y_train)
+    X = np.array(oo.x_train)
+    Y = np.array(oo.y_train)
     actual_labels = Y.argmax(axis=1).reshape([X.shape[0], 1])
+    print(actual_labels[0])
     user_labels = np.ones([actual_labels.shape[0], 1]) * -1
     user_confidences = np.zeros([actual_labels.shape[0], 1])
     loaded = False
@@ -595,8 +594,13 @@ def computeTsneAndPcaDistances():
     oo.pca_distances = np.hstack([index_count, oo.pca_distances])
     oo.pca_distances_working_copy = np.copy(oo.pca_distances)
 
+    print(index_count.shape)
+    print(X.shape)
+
     oo.normal_distances = np.hstack([index_count, X])
     oo.normal_distances_working_copy = np.copy(oo.normal_distances)
+
+    input("Waiting on input")
 
 
 def checkIfTrainChosen(sample):  # Seems to return None insted of alt sample?
@@ -858,8 +862,8 @@ def keras_logreg(state, X_train, Y_train, file_set):
     print("x_train", X_train.shape)
     print("y_train", Y_train.shape)
 
-    X_test = (oo.mnist.test.images).reshape(-1, input_dim)
-    Y_test = (oo.mnist.test.labels).reshape(-1, nb_classes)
+    X_test = (oo.x_test).reshape(-1, input_dim)
+    Y_test = (oo.y_test).reshape(-1, nb_classes)
 
     print("x_test", X_test.shape)
     print("y_test", Y_test.shape)
@@ -934,8 +938,8 @@ def keras_logreg_predicted_labels(state, input_data, output_labels, file_set):
     print("input_data", input_data.shape)
     print("output_labels", output_labels.shape)
 
-    X_test = (oo.mnist.test.images).reshape(-1, input_dim)
-    Y_test = (oo.mnist.test.labels).reshape(-1, nb_classes)
+    X_test = (oo.x_test).reshape(-1, input_dim)
+    Y_test = (oo.y_test).reshape(-1, nb_classes)
 
     print("x_test", X_test.shape)
     print("y_test", Y_test.shape)
@@ -1011,8 +1015,8 @@ def keras_convnet(state, X_train, Y_train, file_set):
     print("x_train", X_train.shape)
     print("y_train", Y_train.shape)
 
-    X_test = (oo.mnist.test.images).reshape((oo.mnist.test.images).shape[0], img_rows, img_cols, 1)
-    Y_test = (oo.mnist.test.labels).reshape(-1, nb_classes)
+    X_test = (oo.x_test).reshape((oo.x_test).shape[0], img_rows, img_cols, 1)
+    Y_test = (oo.y_test).reshape(-1, nb_classes)
 
     print("x_test", X_test.shape)
     print("y_test", Y_test.shape)
@@ -1097,8 +1101,8 @@ def keras_convnet_predicted_labels(state, input_data, output_labels, file_set):
     print("x_train", X_train.shape)
     print("y_train", Y_train.shape)
 
-    X_test = (oo.mnist.test.images).reshape((oo.mnist.test.images).shape[0], img_rows, img_cols, 1)
-    Y_test = (oo.mnist.test.labels).reshape(-1, nb_classes)
+    X_test = (oo.x_test).reshape((oo.x_test).shape[0], img_rows, img_cols, 1)
+    Y_test = (oo.y_test).reshape(-1, nb_classes)
 
     print("x_test", X_test.shape)
     print("y_test", Y_test.shape)
@@ -1622,8 +1626,8 @@ def train_model_using_user_labels():
 def train_model_using_predicted_labels():
     print("Train the model using the predicted labels for the complete training dataset")
 
-    X = np.array(oo.mnist.train.images)
-    Y = np.array(oo.mnist.train.labels)
+    X = np.array(oo.x_train)
+    Y = np.array(oo.y_train)
 
     print("Y size:", Y.shape)
 
