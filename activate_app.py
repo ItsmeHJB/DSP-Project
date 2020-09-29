@@ -600,8 +600,6 @@ def computeTsneAndPcaDistances():
     oo.normal_distances = np.hstack([index_count, X])
     oo.normal_distances_working_copy = np.copy(oo.normal_distances)
 
-    input("Waiting on input")
-
 
 def checkIfTrainChosen(sample):  # Seems to return None insted of alt sample?
 

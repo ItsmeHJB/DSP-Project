@@ -3,7 +3,6 @@ import numpy as np
 from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
-# from tensorflow.contrib.learn.python.learn.datasets.mnist import read_data_sets
 from tensorflow import keras
 
 # from keras.datasets import cifar10
@@ -115,12 +114,33 @@ class Options:
     # (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
     # (x_train, y_train), (x_test, y_test) = cifar10.load_data()
 
+    # Load mnist data set
+    (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
+    x_train, x_test = x_train / 255.0, x_test / 255.0
+
+    # Reshape
+    x_train = np.delete(x_train, np.s_[55000:], axis=0)
+    x_train = x_train.reshape(55000, 784)
+    x_test = x_test.reshape(10000, 784)
+
+    # Convert new style labels back to binary array of [0,9]
+    temp = []
+    y_train = np.delete(y_train, np.s_[55000:], axis=0)
+    for value in y_train:
+        temp.append(get_label_array(value))
+
+    y_train = np.array(temp)
+
+    del temp[:]
+    for value in y_test:
+        temp.append(get_label_array(value))
+
+    y_test = np.array(temp)
+
     if running_on_osx:
         directory_for_test_images = "static/images/mnist_noclass/test"
         directory_for_train_images = "static/images/mnist_noclass/train"
         directory_for_trained_model = "logs/trained_logreg_model.ckpt"
-
-        # mnist = read_data_sets("MNIST_data/", one_hot=True)
 
         tsne_file = "./distance_data/tsne_distances.csv"
         pca_file = "./distance_data/pca_distances.csv"
@@ -133,32 +153,6 @@ class Options:
         directory_for_test_images = "static\\images\\mnist_noclass\\test"
         directory_for_train_images = "static\\images\\mnist_noclass\\train"
         directory_for_trained_model = "logs\\trained_logreg_model.ckpt"
-
-        # Load mnist data set
-        (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
-        x_train, x_test = x_train / 255.0, x_test / 255.0
-
-        # Reshape
-        x_train = x_train.reshape(60000, 784)
-        x_test = x_test.reshape(10000, 784)
-
-        # Convert new style labels back to binary array of [0,9]
-        temp = []
-        for value in y_train:
-            temp.append(get_label_array(value))
-
-        y_train = np.array(temp)
-
-        del temp[:]
-        for value in y_test:
-            temp.append(get_label_array(value))
-
-        y_test = np.array(temp)
-
-        # mnist = read_data_sets("MNIST_data\\", one_hot=True)
-        # print(mnist.train.images[0])
-
-        # input("Press Enter to continue...")
 
         tsne_file = "distance_data\\tsne_distances.csv"
         pca_file = "distance_data\\pca_distances.csv"
