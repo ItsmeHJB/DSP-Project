@@ -88,11 +88,11 @@ class Options():
 	use_confidence = False
 
 	if platform == "linux" or platform == "linux2":
-	    running_on_osx = True
+		running_on_osx = True
 	elif platform == "darwin":
-	    running_on_osx = True
+		running_on_osx = True
 	elif platform == "win32":
-	    running_on_osx = False
+		running_on_osx = False
 
 	#### Can we get it working so that we cn drop in new datasets easily?
 	# (x_train, y_train), (x_test, y_test) = mnist.load_data()
@@ -100,32 +100,32 @@ class Options():
 	# (x_train, y_train), (x_test, y_test) = cifar10.load_data()
 
 	if running_on_osx:
-	    directory_for_test_images = "static/images/mnist_noclass/test"
-	    directory_for_train_images = "static/images/mnist_noclass/train"
-	    directory_for_trained_model = "logs/trained_logreg_model.ckpt"
-	    
-	    mnist = read_data_sets("MNIST_data/", one_hot=True)
+		directory_for_test_images = "static/images/mnist_noclass/test"
+		directory_for_train_images = "static/images/mnist_noclass/train"
+		directory_for_trained_model = "logs/trained_logreg_model.ckpt"
 
-	    tsne_file = "./distance_data/tsne_distances.csv"
-	    pca_file = "./distance_data/pca_distances.csv"
-	    umap_file = "./distance_data/umap_distances.csv"
-	    pcatsne_file = "./distance_data/pcatsne_distances.csv"
-	    kmeans_centroid_file = "./distance_data/kmeans_centroid_distances.csv"
+		mnist = read_data_sets("MNIST_data/", one_hot=True)
+
+		tsne_file = "./distance_data/tsne_distances.csv"
+		pca_file = "./distance_data/pca_distances.csv"
+		umap_file = "./distance_data/umap_distances.csv"
+		pcatsne_file = "./distance_data/pcatsne_distances.csv"
+		kmeans_centroid_file = "./distance_data/kmeans_centroid_distances.csv"
 	else:
-	    directory_for_test_images = "static\\images\\mnist\\test"
-	    directory_for_train_images = "static\\images\\mnist\\train"
-	    directory_for_test_images = "static\\images\\mnist_noclass\\test"
-	    directory_for_train_images = "static\\images\\mnist_noclass\\train"
-	    directory_for_trained_model = "logs\\trained_logreg_model.ckpt"
-	    
-	    mnist = read_data_sets("MNIST_data\\", one_hot=True)
+		directory_for_test_images = "static\\images\\mnist\\test"
+		directory_for_train_images = "static\\images\\mnist\\train"
+		directory_for_test_images = "static\\images\\mnist_noclass\\test"
+		directory_for_train_images = "static\\images\\mnist_noclass\\train"
+		directory_for_trained_model = "logs\\trained_logreg_model.ckpt"
+
+		mnist = read_data_sets("MNIST_data\\", one_hot=True)
 		print("Test change")
 
-	    tsne_file = "distance_data\\tsne_distances.csv"
-	    pca_file = "distance_data\\pca_distances.csv"
-	    umap_file = "distance_data\\umap_distances.csv"
-	    pcatsne_file = "distance_data\\pcatsne_distances.csv"
-	    kmeans_centroid_file = "distance_data\\kmeans_centroid_distances.csv"
+		tsne_file = "distance_data\\tsne_distances.csv"
+		pca_file = "distance_data\\pca_distances.csv"
+		umap_file = "distance_data\\umap_distances.csv"
+		pcatsne_file = "distance_data\\pcatsne_distances.csv"
+		kmeans_centroid_file = "distance_data\\kmeans_centroid_distances.csv"
 
 	def __init__(self):
 		print ("__init__ called")
