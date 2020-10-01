@@ -2,4 +2,15 @@
 
 Currently this report contains:
 
-- ActiVAte tool that was used for the VAST 2018 submission
+- ActiVAte tool that was used for Harrison Bennion's Digital Systems Project, 2020.
+
+After cloning the project, set up a venv using python 3.8 with pip installed.
+Run the following command to load the correct modules:
+
+`pip install -r requirement.txt`
+
+To store the modules again after they're changed:
+
+`pip freeze > requirement.txt`
+
+Run the file 'activate_app.py' with python to start the web app
