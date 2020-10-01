@@ -119,6 +119,7 @@ class Options():
 	    directory_for_trained_model = "logs\\trained_logreg_model.ckpt"
 	    
 	    mnist = read_data_sets("MNIST_data\\", one_hot=True)
+		print("Test change")
 
 	    tsne_file = "distance_data\\tsne_distances.csv"
 	    pca_file = "distance_data\\pca_distances.csv"
