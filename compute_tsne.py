@@ -5,8 +5,8 @@ from activate_config import Options as oo
 from PIL import Image
 
 
-X = np.array(oo.mnist.train.images)
-Y = np.array(oo.mnist.train.labels)
+X = np.array(oo.cifar10.train.images)
+Y = np.array(oo.cifar10.train.labels)
 actual_labels = Y.argmax(axis=1).reshape([X.shape[0], 1])
 user_labels = np.ones([actual_labels.shape[0], 1]) * -1
 user_confidences = np.zeros([actual_labels.shape[0], 1])

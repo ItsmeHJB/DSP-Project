@@ -9,7 +9,7 @@ Run the following command to load the correct modules:
 
 `pip install -r requirement.txt`
 
-To store the modules again after they're changed:
+To store the modules again after they're updated:
 
 `pip freeze > requirement.txt`
 

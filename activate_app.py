@@ -180,7 +180,7 @@ def getDistanceTrainBatch(size):
             else:
                 oo.point_select, oo.normal_distances_working_copy, this_index = select_starting_point_for_full_image(
                     oo.normal_distances_working_copy)
-            sample = 'MNIST_image_' + str(int(this_index)) + '.png'
+            sample = 'CIFAR10_image_' + str(int(this_index)) + '.png'
             if sample not in oo.all_selected_filenames:
                 sample_ref.append(sample)
                 counter += 1
@@ -191,7 +191,7 @@ def getDistanceTrainBatch(size):
             else:
                 oo.point_select, oo.normal_distances_working_copy, this_index = select_point_based_on_distance_for_full_image(
                     oo.point_select, oo.normal_distances_working_copy)
-            sample = 'MNIST_image_' + str(int(this_index)) + '.png'
+            sample = 'CIFAR10_image_' + str(int(this_index)) + '.png'
             if sample not in oo.all_selected_filenames:
                 sample_ref.append(sample)
                 counter += 1
@@ -219,7 +219,7 @@ def getRandomTrainBatch(size):
             else:
                 oo.point_select, oo.normal_distances_working_copy, this_index = select_starting_point_for_full_image(
                     oo.normal_distances_working_copy, use_random=True)
-            sample = 'MNIST_image_' + str(int(this_index)) + '.png'
+            sample = 'CIFAR10_image_' + str(int(this_index)) + '.png'
             if sample not in oo.all_selected_filenames:
                 sample_ref.append(sample)
                 counter += 1
@@ -230,7 +230,7 @@ def getRandomTrainBatch(size):
             else:
                 oo.point_select, oo.normal_distances_working_copy, this_index = select_point_based_on_random_for_full_image(
                     oo.point_select, oo.normal_distances_working_copy)
-            sample = 'MNIST_image_' + str(int(this_index)) + '.png'
+            sample = 'CIFAR10_image_' + str(int(this_index)) + '.png'
             if sample not in oo.all_selected_filenames:
                 sample_ref.append(sample)
                 counter += 1
@@ -262,7 +262,7 @@ def getConfidenceRandomTrainBatch(size, method_of_conf_select='least_confidence'
             else:
                 oo.point_select, oo.pca_distances_working_copy, this_index = select_point_based_on_random(
                     oo.point_select, oo.pca_distances_working_copy)
-            sample = 'MNIST_image_' + str(int(this_index)) + '.png'
+            sample = 'CIFAR10_image_' + str(int(this_index)) + '.png'
             if sample not in oo.all_selected_filenames:
                 sample_ref.append(sample)
                 counter += 1
@@ -275,7 +275,7 @@ def getConfidenceRandomTrainBatch(size, method_of_conf_select='least_confidence'
         while (counter < size * random_size):
             temp_point_select, temp_pca_distances_working_copy, this_index = select_point_based_on_random(
                 temp_point_select, temp_pca_distances_working_copy)
-            sample = 'MNIST_image_' + str(int(this_index)) + '.png'
+            sample = 'CIFAR10_image_' + str(int(this_index)) + '.png'
             if sample not in oo.all_selected_filenames:
                 sample_ref_temp.append(sample)
                 counter += 1
@@ -368,7 +368,7 @@ def getConfidenceDistanceTrainBatch(size, method_of_conf_select='least_confidenc
             else:
                 oo.point_select, oo.pca_distances_working_copy, this_index = select_point_based_on_random(
                     oo.point_select, oo.pca_distances_working_copy)
-            sample = 'MNIST_image_' + str(int(this_index)) + '.png'
+            sample = 'CIFAR10_image_' + str(int(this_index)) + '.png'
             if sample not in oo.all_selected_filenames:
                 sample_ref.append(sample)
                 counter += 1
@@ -381,7 +381,7 @@ def getConfidenceDistanceTrainBatch(size, method_of_conf_select='least_confidenc
         while (counter < size * distance_size):
             temp_point_select, temp_pca_distances_working_copy, this_index = select_point_based_on_distance(
                 temp_point_select, temp_pca_distances_working_copy)
-            sample = 'MNIST_image_' + str(int(this_index)) + '.png'
+            sample = 'CIFAR10_image_' + str(int(this_index)) + '.png'
             if sample not in oo.all_selected_filenames:
                 sample_ref_temp.append(sample)
                 counter += 1
@@ -584,9 +584,9 @@ def computeTsneAndPcaDistances():
             oo.pca_distances = np.hstack([oo.pca_distances, user_confidences])
 
         oo.pca_distances[:, 0] = ((oo.pca_distances[:, 0] - np.min(oo.pca_distances[:, 0])) / (
-                    np.max(oo.pca_distances[:, 0]) - np.min(oo.pca_distances[:, 0])) * 2) - 1
+                np.max(oo.pca_distances[:, 0]) - np.min(oo.pca_distances[:, 0])) * 2) - 1
         oo.pca_distances[:, 1] = ((oo.pca_distances[:, 1] - np.min(oo.pca_distances[:, 1])) / (
-                    np.max(oo.pca_distances[:, 1]) - np.min(oo.pca_distances[:, 1])) * 2) - 1
+                np.max(oo.pca_distances[:, 1]) - np.min(oo.pca_distances[:, 1])) * 2) - 1
         print("Writing to file:", this_filename)
         np.savetxt(this_filename, oo.pca_distances, delimiter=',')
 
@@ -606,6 +606,8 @@ def checkIfTrainChosen(sample):  # Seems to return None insted of alt sample?
     if (len(oo.total_train_sample_ref)) != (oo.total_train_pool):
         if sample in oo.total_train_sample_ref:
             alt_sample = rand.choice(os.listdir(oo.directory_for_train_images))
+            print(type(alt_sample))
+            input("Waiting on the magic call to happen: ")
             return checkIfTestChosen(alt_sample)
         else:
             oo.total_train_sample_ref.append(sample)
@@ -633,12 +635,14 @@ def keras_current_model_prediction(sample_batch):
 
     oo.temp_test = []
 
-    # Recieves sample_ref array of mnist image names and converts:
+    # Recieves sample_ref array of cifar10 image names and converts:
     for i in range(len(sample_batch)):
         if oo.running_on_osx:
             img = Image.open(oo.directory_for_train_images + '/' + sample_batch[i]).convert('L')  # Greyscale
         else:
             img = Image.open(oo.directory_for_train_images + '\\' + sample_batch[i]).convert('L')  # Greyscale
+        print(type(img))
+        input("Waiting on img check: ")
         # Create an array with pixel values from image opened
         sample_vector = np.array(img).ravel() / 255
         # Appends to x_train
@@ -682,12 +686,14 @@ def keras_current_convnet_model_prediction(sample_batch):
 
     oo.temp_test = []
 
-    # Recieves sample_ref array of mnist image names and converts:
+    # Recieves sample_ref array of cifar10 image names and converts:
     for i in range(len(sample_batch)):
         if oo.running_on_osx:
             img = Image.open(oo.directory_for_train_images + '/' + sample_batch[i]).convert('L')  # Greyscale
         else:
             img = Image.open(oo.directory_for_train_images + '\\' + sample_batch[i]).convert('L')  # Greyscale
+        print(type(img))
+        input("Waiting on go: ")
         # Create an array with pixel values from image opened
         sample_vector = np.array(img).ravel() / 255
         # Appends to x_train
@@ -739,6 +745,9 @@ def xTrainEncoder(image_ref):
         img = Image.open(oo.directory_for_train_images + '/' + image_ref).convert('L')  # Greyscale
     else:
         img = Image.open(oo.directory_for_train_images + '\\' + image_ref).convert('L')  # Greyscale
+    print("xTrainEncoder: ")
+    print(type(img))
+    input("Waiting in go: ")
     sample_vector = np.array(img).ravel() / 255
     if (len(oo.x_train) > 0):
         oo.x_train = np.vstack([oo.x_train, sample_vector])
@@ -753,6 +762,8 @@ def xTrainEncoderConfidence(image_ref, labels):
         img = Image.open(oo.directory_for_train_images + '/' + image_ref).convert('L')  # Greyscale
     else:
         img = Image.open(oo.directory_for_train_images + '\\' + image_ref).convert('L')  # Greyscale
+    print("in xTrainEncoderConfidence")
+    print(type(img))
     sample_vector = np.array(img) / 255
     sample_vector = np.array(sample_vector).reshape(-1, 28, 28, 1)
 
@@ -1341,7 +1352,7 @@ def add_image_to_labelling_pool():
                                                                               oo.pca_distances_working_copy, my_index)
     output = {}
 
-    sample = 'MNIST_image_' + str(int(my_index)) + '.png'
+    sample = 'CIFAR10_image_(' + str(int(my_index)) + ').jpg'
     sample_ref = []
     sample_ref.append(sample)
 

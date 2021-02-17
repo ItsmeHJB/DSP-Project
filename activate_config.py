@@ -12,7 +12,7 @@ from tensorflow import keras
 from sys import platform
 
 
-def get_label_array(argument):
+def get_label_array(argument):  # Labels stored as digits 0-9 in dataset
     switcher = {
         0: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         1: [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -114,8 +114,9 @@ class Options:
     # (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
     # (x_train, y_train), (x_test, y_test) = cifar10.load_data()
 
-    # Load mnist data set
-    (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
+    # Load data set
+    # (training image, training lables), (test images, test labels)
+    (x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
     x_train, x_test = x_train / 255.0, x_test / 255.0
 
     # Reshape
@@ -138,8 +139,8 @@ class Options:
     y_test = np.array(temp)
 
     if running_on_osx:
-        directory_for_test_images = "static/images/mnist_noclass/test"
-        directory_for_train_images = "static/images/mnist_noclass/train"
+        directory_for_test_images = "static/images/cifar10_noclass/test"
+        directory_for_train_images = "static/images/cifar10_noclass/train"
         directory_for_trained_model = "logs/trained_logreg_model.ckpt"
 
         tsne_file = "./distance_data/tsne_distances.csv"
@@ -148,10 +149,10 @@ class Options:
         pcatsne_file = "./distance_data/pcatsne_distances.csv"
         kmeans_centroid_file = "./distance_data/kmeans_centroid_distances.csv"
     else:
-        directory_for_test_images = "static\\images\\mnist\\test"
-        directory_for_train_images = "static\\images\\mnist\\train"
-        directory_for_test_images = "static\\images\\mnist_noclass\\test"
-        directory_for_train_images = "static\\images\\mnist_noclass\\train"
+        # directory_for_test_images = "static\\images\\cifar10\\test"
+        # directory_for_train_images = "static\\images\\cifar10\\train"
+        directory_for_test_images = "static\\images\\cifar10_noclass\\test"
+        directory_for_train_images = "static\\images\\cifar10_noclass\\train"
         directory_for_trained_model = "logs\\trained_logreg_model.ckpt"
 
         tsne_file = "distance_data\\tsne_distances.csv"
