@@ -5,10 +5,6 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 from tensorflow import keras
 
-# from keras.datasets import cifar10
-# from keras.datasets import mnist
-# from keras.datasets import fashion_mnist
-
 from sys import platform
 
 
@@ -54,7 +50,7 @@ class Options:
     batch_total = 0
     test_size = 0
     total_test_pool = 10000
-    total_train_pool = 55000
+    total_train_pool = 50000
 
     number_of_classes = 10
 
@@ -109,32 +105,30 @@ class Options:
     elif platform == "win32":
         running_on_osx = False
 
-    #### Can we get it working so that we cn drop in new datasets easily?
-    # (x_train, y_train), (x_test, y_test) = mnist.load_data()
-    # (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
-    # (x_train, y_train), (x_test, y_test) = cifar10.load_data()
-
     # Load data set
     # (training image, training lables), (test images, test labels)
     (x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
     x_train, x_test = x_train / 255.0, x_test / 255.0
 
     # Reshape
-    x_train = np.delete(x_train, np.s_[55000:], axis=0)
-    x_train = x_train.reshape(55000, 784)
-    x_test = x_test.reshape(10000, 784)
+    x_train = np.delete(x_train, np.s_[total_train_pool:], axis=0)
+    # Dynamic reshape size
+    temp = int(x_train.size / total_train_pool)
+
+    x_train = x_train.reshape(total_train_pool, temp)
+    x_test = x_test.reshape(total_test_pool, temp)
 
     # Convert new style labels back to binary array of [0,9]
     temp = []
-    y_train = np.delete(y_train, np.s_[55000:], axis=0)
+    y_train = np.delete(y_train, np.s_[total_train_pool:], axis=0)
     for value in y_train:
-        temp.append(get_label_array(value))
+        temp.append(get_label_array(int(value)))
 
     y_train = np.array(temp)
 
     del temp[:]
     for value in y_test:
-        temp.append(get_label_array(value))
+        temp.append(get_label_array(int(value)))
 
     y_test = np.array(temp)
 

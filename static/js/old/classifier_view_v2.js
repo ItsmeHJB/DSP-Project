@@ -40,9 +40,9 @@ function create_classifier_pane(placement) {
   vis.attr('id','classifier_pane').attr('width', width).attr('height', height);
 
   // Generate classifier regions/boxes:
-  var mnist_classes = 10;
+  var classes = 10;
   var regions = vis.append("g");
-  for (i = 0; i < mnist_classes; i++) {
+  for (i = 0; i < classes; i++) {
       regions.append('rect')
             .attr("id", function() { return "region_" + i; })
             .attr('x', (1 + (step * i)))
@@ -112,8 +112,7 @@ function update_classifier_pane(images, batchsize) {
 
   var image = nodeEnter.append("svg:image")
       .attr("xlink:href",  function(nodes) {
-          //var src = "/static/images/mnist/train/"
-          var src = "/static/images/mnist_noclass/train/"
+          var src = "/static/images/cifar10_noclass/train/"
         return (src + nodes.image);
       })
       .attr("x", function() { return unlabelled_box_x + (Math.random() * (unlabelled_box_width-image_width)) })
@@ -248,8 +247,7 @@ function update_classifier_pane_with_single_instance(images, batchsize, batch_to
 
   var image = nodeEnter.append("svg:image")
       .attr("xlink:href",  function(nodes) {
-          //var src = "/static/images/mnist/train/"
-          var src = "/static/images/mnist_noclass/train/"
+          var src = "/static/images/cifar10_noclass/train/"
         return (src + nodes.image);
       })
       .attr("x", function() { return unlabelled_box_x + (Math.random() * (unlabelled_box_width-image_width)) })
@@ -412,8 +410,7 @@ function update_classifier_pane_predict(node_data, batchsize) {
   // Append images:
   var image = nodeEnter.append("svg:image")
       .attr("xlink:href",  function(nodes) {
-        //var src = "/static/images/mnist/train/"
-        var src = "/static/images/mnist_noclass/train/"
+        var src = "/static/images/cifar10_noclass/train/"
         return (src + nodes.image);}
       )
       .attr("class", "nodeuser")
