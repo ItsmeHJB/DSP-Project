@@ -59,7 +59,7 @@ def select_starting_point(pcad, use_random=False):
         index = np.argmin(sum_value)
     print("Selected index:", index)
     oo.point_select.append(oo.pca_distances[index, :])
-    this_index = oo.pca_distances[index, 0]
+    this_index = int(oo.pca_distances[index, 0])
     oo.point_select = np.array(oo.point_select)
 
     pcad = np.delete(pcad, this_index, 0)
@@ -103,8 +103,10 @@ def select_point(ps, pcad, index):
     # print ("PCA shape: ", pcad.shape)
     # print ("PS shape: ", ps.shape)
     # ps = np.array(ps)
+    pcad = np.array(pcad)
 
     if len(ps) == 0:
+        print(type(pcad))
         ps = pcad[index, :].reshape(1, -1)
     else:
         ps = np.append(ps, pcad[index, :].reshape(1, ps.shape[1]), axis=0)
@@ -171,6 +173,8 @@ def select_point_based_on_random_for_full_image(ps, pcad):
 
 
 def getDistanceTrainBatch(size):
+    print(size)
+
     sample_ref = []
     counter = 0
     while (counter < size):
@@ -181,7 +185,7 @@ def getDistanceTrainBatch(size):
             else:
                 oo.point_select, oo.normal_distances_working_copy, this_index = select_starting_point_for_full_image(
                     oo.normal_distances_working_copy)
-            sample = 'CIFAR10_image_' + str(int(this_index)) + '.jpg'
+            sample = 'CIFAR10_image_(' + str(int(this_index)) + ').jpg'
             if sample not in oo.all_selected_filenames:
                 sample_ref.append(sample)
                 counter += 1
@@ -192,7 +196,7 @@ def getDistanceTrainBatch(size):
             else:
                 oo.point_select, oo.normal_distances_working_copy, this_index = select_point_based_on_distance_for_full_image(
                     oo.point_select, oo.normal_distances_working_copy)
-            sample = 'CIFAR10_image_' + str(int(this_index)) + '.jpg'
+            sample = 'CIFAR10_image_(' + str(int(this_index)) + ').jpg'
             if sample not in oo.all_selected_filenames:
                 sample_ref.append(sample)
                 counter += 1
@@ -220,7 +224,7 @@ def getRandomTrainBatch(size):
             else:
                 oo.point_select, oo.normal_distances_working_copy, this_index = select_starting_point_for_full_image(
                     oo.normal_distances_working_copy, use_random=True)
-            sample = 'CIFAR10_image_' + str(int(this_index)) + '.jpg'
+            sample = 'CIFAR10_image_(' + str(int(this_index)) + ').jpg'
             if sample not in oo.all_selected_filenames:
                 sample_ref.append(sample)
                 counter += 1
@@ -231,7 +235,7 @@ def getRandomTrainBatch(size):
             else:
                 oo.point_select, oo.normal_distances_working_copy, this_index = select_point_based_on_random_for_full_image(
                     oo.point_select, oo.normal_distances_working_copy)
-            sample = 'CIFAR10_image_' + str(int(this_index)) + '.jpg'
+            sample = 'CIFAR10_image_(' + str(int(this_index)) + ').jpg'
             if sample not in oo.all_selected_filenames:
                 sample_ref.append(sample)
                 counter += 1
@@ -263,7 +267,7 @@ def getConfidenceRandomTrainBatch(size, method_of_conf_select='least_confidence'
             else:
                 oo.point_select, oo.pca_distances_working_copy, this_index = select_point_based_on_random(
                     oo.point_select, oo.pca_distances_working_copy)
-            sample = 'CIFAR10_image_' + str(int(this_index)) + '.jpg'
+            sample = 'CIFAR10_image_(' + str(int(this_index)) + ').jpg'
             if sample not in oo.all_selected_filenames:
                 sample_ref.append(sample)
                 counter += 1
@@ -276,7 +280,7 @@ def getConfidenceRandomTrainBatch(size, method_of_conf_select='least_confidence'
         while (counter < size * random_size):
             temp_point_select, temp_pca_distances_working_copy, this_index = select_point_based_on_random(
                 temp_point_select, temp_pca_distances_working_copy)
-            sample = 'CIFAR10_image_' + str(int(this_index)) + '.jpg'
+            sample = 'CIFAR10_image_(' + str(int(this_index)) + ').jpg'
             if sample not in oo.all_selected_filenames:
                 sample_ref_temp.append(sample)
                 counter += 1
@@ -369,7 +373,7 @@ def getConfidenceDistanceTrainBatch(size, method_of_conf_select='least_confidenc
             else:
                 oo.point_select, oo.pca_distances_working_copy, this_index = select_point_based_on_random(
                     oo.point_select, oo.pca_distances_working_copy)
-            sample = 'CIFAR10_image_' + str(int(this_index)) + '.jpg'
+            sample = 'CIFAR10_image_(' + str(int(this_index)) + ').jpg'
             if sample not in oo.all_selected_filenames:
                 sample_ref.append(sample)
                 counter += 1
@@ -382,7 +386,7 @@ def getConfidenceDistanceTrainBatch(size, method_of_conf_select='least_confidenc
         while (counter < size * distance_size):
             temp_point_select, temp_pca_distances_working_copy, this_index = select_point_based_on_distance(
                 temp_point_select, temp_pca_distances_working_copy)
-            sample = 'CIFAR10_image_' + str(int(this_index)) + '.jpg'
+            sample = 'CIFAR10_image_(' + str(int(this_index)) + ').jpg'
             if sample not in oo.all_selected_filenames:
                 sample_ref_temp.append(sample)
                 counter += 1

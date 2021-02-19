@@ -46,7 +46,7 @@ class Options:
 
     conf_matrix = []
 
-    batch_size = 0
+    batch_size = 10
     batch_total = 0
     test_size = 0
     total_test_pool = 10000

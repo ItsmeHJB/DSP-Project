@@ -179,7 +179,7 @@ function create_scatter_plot(data, placement) {
       //drawPoint(scatter_data[my_index][0], scatter_data[my_index][1], -1, 1);
 
       var img = document.createElement("img");
-      img.src = "/static/images/cifar10_noclass/train/CIFAR10_image_" + my_index + ".jpg"
+      img.src = "/static/images/cifar10_noclass/train/CIFAR10_image_(" + my_index + ").jpg"
       img.width = 32;
       img.height = 32;
       var dv = document.getElementById("scatter_plot-image_view");
@@ -238,7 +238,7 @@ function create_scatter_plot(data, placement) {
       //drawPoint(scatter_data[my_index][0], scatter_data[my_index][1], -1, 1);
 
       var img = document.createElement("img");
-      img.src = "/static/images/cifar10_noclass/train/CIFAR10_image_" + my_index + ".jpg"
+      img.src = "/static/images/cifar10_noclass/train/CIFAR10_image_(" + my_index + ").jpg"
       img.width = 64;
       img.height = 64;
       var dv = document.getElementById("scatter_plot-image_view");
@@ -252,7 +252,7 @@ function create_scatter_plot(data, placement) {
       //} 
       
 
-      var image_file_ref = [["CIFAR10_image_" + my_index + ".jpg"]]
+      var image_file_ref = [["CIFAR10_image_(" + my_index + ").jpg"]]
       console.log("update with ", image_file_ref)
       
 
