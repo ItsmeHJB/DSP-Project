@@ -611,8 +611,6 @@ def checkIfTrainChosen(sample):  # Seems to return None insted of alt sample?
     if (len(oo.total_train_sample_ref)) != (oo.total_train_pool):
         if sample in oo.total_train_sample_ref:
             alt_sample = rand.choice(os.listdir(oo.directory_for_train_images))
-            print(type(alt_sample))
-            input("Waiting on the magic call to happen: ")
             return checkIfTestChosen(alt_sample)
         else:
             oo.total_train_sample_ref.append(sample)
@@ -646,8 +644,6 @@ def keras_current_model_prediction(sample_batch):
             img = Image.open(oo.directory_for_train_images + '/' + sample_batch[i]).convert('L')  # Greyscale
         else:
             img = Image.open(oo.directory_for_train_images + '\\' + sample_batch[i]).convert('L')  # Greyscale
-        print(type(img))
-        input("Waiting on img check: ")
         # Create an array with pixel values from image opened
         sample_vector = np.array(img).ravel() / 255
         # Appends to x_train
@@ -697,8 +693,6 @@ def keras_current_convnet_model_prediction(sample_batch):
             img = Image.open(oo.directory_for_train_images + '/' + sample_batch[i]).convert('L')  # Greyscale
         else:
             img = Image.open(oo.directory_for_train_images + '\\' + sample_batch[i]).convert('L')  # Greyscale
-        print(type(img))
-        input("Waiting on go: ")
         # Create an array with pixel values from image opened
         sample_vector = np.array(img).ravel() / 255
         # Appends to x_train
@@ -751,10 +745,10 @@ def xTrainEncoder(image_ref):
     else:
         img = Image.open(oo.directory_for_train_images + '\\' + image_ref).convert('L')  # Greyscale
     print("xTrainEncoder: ")
-    print(type(img))
-    input("Waiting in go: ")
     sample_vector = np.array(img).ravel() / 255
-    if (len(oo.x_train) > 0):
+    if len(oo.x_train) > 0:
+        print(oo.x_train.shape)
+        print(sample_vector.shape)
         oo.x_train = np.vstack([oo.x_train, sample_vector])
     else:
         oo.x_train = sample_vector.reshape([1, sample_vector.shape[0]])
@@ -1278,7 +1272,7 @@ def update_label():
     # batch_labels = np.array([[]]).astype(int)
     output = {}
 
-    file_id = int(node_image.split(".")[0].split("_")[2])
+    file_id = int(node_image.split(")")[0].split("(")[1])
 
     # output['scatter_index'] = oo.pca_distances[file_id, 0]
     output['scatter_x'] = oo.pca_distances[file_id, 1]

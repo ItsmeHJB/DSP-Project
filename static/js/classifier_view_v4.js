@@ -1,7 +1,7 @@
 var nodes = []
 var user_label_counter = 0;
-var total_user_labels = 0;
-var user_label_array = [];
+var total_user_labels = 10;
+var user_label_array = ["Airplane", "Automobile", "Bird", "Cat", "Deer", "Dog", "Frog", "Horse", "Ship", "Truck"];
 
 var our_ten_colours = ['#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a'];
 //var our_ten_colours = ['#8dd3c7','#ffffb3','#bebada','#fb8072','#80b1d3','#fdb462','#b3de69','#fccde5','#d9d9d9','#bc80bd'];
@@ -68,14 +68,13 @@ function create_classifier_pane(placement) {
             .style('fill', function () { return our_ten_colours[i] })
             .style("opacity", 0.75)
       regions.append('text')
-            .attr('x', (30 + (step * i)))
-            .attr('y', 85)
+            .attr('x', (10 + (step * i)))
+            .attr('y', 40)
             .style("font-family", "sans-serif")
-            .style("font-size", 114)
+            .style("font-size", 16)
             .style('fill', "white")
-            .style("opacity", 0.3)
-            //.style('fill', function () { return our_ten_colours[i] })
-            .text(i)
+            .style("opacity", 0.7)
+            .text(user_label_array[i])
 
       var region_values = [(1 + (step * i)), 1, box_width+(1 + (step * i)), box_height+1, i]
       class_regions.push(region_values)
