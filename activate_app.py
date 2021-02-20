@@ -666,9 +666,7 @@ def keras_current_model_prediction(sample_batch):
 
         data_entry = {}
 
-        data_entry['id'] = sample_batch[i].split('_')[2]
-        data_entry['id'] = int(data_entry['id'].split('.')[0])
-
+        data_entry['id'] = int(sample_batch[i].split(")")[0].split("(")[1])
         data_entry['label'] = int(np.argmax(prediction_result))
         data_entry['image'] = sample_batch[i]
         data_entry['confidence'] = float(np.max(prediction_result[0]))
@@ -720,9 +718,7 @@ def keras_current_convnet_model_prediction(sample_batch):
         print(prediction_result)
         data_entry = {}
 
-        data_entry['id'] = sample_batch[i].split('_')[2]
-        data_entry['id'] = int(data_entry['id'].split('.')[0])
-
+        data_entry['id'] = int(sample_batch[i].split(")")[0].split("(")[1])
         data_entry['label'] = int(np.argmax(prediction_result))
         data_entry['image'] = sample_batch[i]
         data_entry['confidence'] = float(np.max(prediction_result[0]))
@@ -765,9 +761,6 @@ def xTrainEncoderConfidence(image_ref, labels):
     sample_vector = np.array(sample_vector).reshape(-1, 28, 28, 1)
 
     print("Lets generate new samples based on confidence")
-    # print (sample_vector)
-    # print (labels)
-
     counter = 0
     for X_gen, Y_gen in datagen.flow(sample_vector, labels, batch_size=1):
         sample_vector = X_gen.reshape([1, -1])

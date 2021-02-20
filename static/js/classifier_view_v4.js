@@ -1,8 +1,9 @@
 var nodes = []
 var user_label_counter = 0;
-var total_user_labels = 10;
-var user_label_array = ["Airplane", "Automobile", "Bird", "Cat", "Deer", "Dog", "Frog", "Horse", "Ship", "Truck"];
+var total_user_labels = 0;
+var user_label_array = [];
 
+var cifar_labels = ["Airplane", "Automobile", "Bird", "Cat", "Deer", "Dog", "Frog", "Horse", "Ship", "Truck"];
 var our_ten_colours = ['#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a'];
 //var our_ten_colours = ['#8dd3c7','#ffffb3','#bebada','#fb8072','#80b1d3','#fdb462','#b3de69','#fccde5','#d9d9d9','#bc80bd'];
 
@@ -74,7 +75,7 @@ function create_classifier_pane(placement) {
             .style("font-size", 16)
             .style('fill', "white")
             .style("opacity", 0.7)
-            .text(user_label_array[i])
+            .text(cifar_labels[i])
 
       var region_values = [(1 + (step * i)), 1, box_width+(1 + (step * i)), box_height+1, i]
       class_regions.push(region_values)
@@ -105,10 +106,10 @@ function update_classifier_pane(images, batchsize) {
   var nodes = []
 
   for (i = 0; i < batchsize; i++){
-      nodes.push({ id: parseInt(images[0][i].split('_')[2].split('.')[0]),
+      nodes.push({ id: parseInt(images[0][i].split(")")[0].split("(")[1]),
         label: "?", 
         image: images[0][i], 
-        scatter_id: parseInt(images[0][i].split('_')[2].split('.')[0]),
+        scatter_id: parseInt(images[0][i].split(")")[0].split("(")[1]),
         x: unlabelled_box_x + (Math.random() * (unlabelled_box_width-image_width)),
         y: unlabelled_box_y + (Math.random() * (unlabelled_box_height-image_height)),
         moved: false
@@ -326,10 +327,10 @@ function update_classifier_pane_with_single_instance(images, batchsize, batch_to
   console.log(images)
 
   if (keys.length == 0) {
-    nodes.push({ id: parseInt(images[0][0].split('_')[2].split('.')[0]), 
+    nodes.push({ id: parseInt(images[0][0].split(')')[0].split('(')[1]),
       label: "?", 
       image: images[0][0], 
-      scatter_id: parseInt(images[0][0].split('_')[2].split('.')[0]),
+      scatter_id: parseInt(images[0][0].split(")")[0].split("(")[1]),
       x: unlabelled_box_x + (Math.random() * (unlabelled_box_width-image_width)),
       y: unlabelled_box_y + (Math.random() * (unlabelled_box_height-image_height)),
       moved: false
