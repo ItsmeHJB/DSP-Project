@@ -641,9 +641,9 @@ def keras_current_model_prediction(sample_batch):
     # Recieves sample_ref array of cifar10 image names and converts:
     for i in range(len(sample_batch)):
         if oo.running_on_osx:
-            img = Image.open(oo.directory_for_train_images + '/' + sample_batch[i]).convert('L')  # Greyscale
+            img = Image.open(oo.directory_for_train_images + '/' + sample_batch[i])
         else:
-            img = Image.open(oo.directory_for_train_images + '\\' + sample_batch[i]).convert('L')  # Greyscale
+            img = Image.open(oo.directory_for_train_images + '\\' + sample_batch[i])
         # Create an array with pixel values from image opened
         sample_vector = np.array(img).ravel() / 255
         # Appends to train_images
@@ -690,9 +690,9 @@ def keras_current_convnet_model_prediction(sample_batch):
     # Recieves sample_ref array of cifar10 image names and converts:
     for i in range(len(sample_batch)):
         if oo.running_on_osx:
-            img = Image.open(oo.directory_for_train_images + '/' + sample_batch[i]).convert('L')  # Greyscale
+            img = Image.open(oo.directory_for_train_images + '/' + sample_batch[i])
         else:
-            img = Image.open(oo.directory_for_train_images + '\\' + sample_batch[i]).convert('L')  # Greyscale
+            img = Image.open(oo.directory_for_train_images + '\\' + sample_batch[i])
         # Create an array with pixel values from image opened
         sample_vector = np.array(img).ravel() / 255
         # Appends to train_images
@@ -741,14 +741,12 @@ def appendConfidence(confidence_score):
 
 def xTrainEncoder(image_ref):
     if oo.running_on_osx:
-        img = Image.open(oo.directory_for_train_images + '/' + image_ref).convert('L')  # Greyscale
+        img = Image.open(oo.directory_for_train_images + '/' + image_ref)
     else:
-        img = Image.open(oo.directory_for_train_images + '\\' + image_ref).convert('L')  # Greyscale
+        img = Image.open(oo.directory_for_train_images + '\\' + image_ref)
     print("xTrainEncoder: ")
     sample_vector = np.array(img).ravel() / 255
     if len(oo.train_images) > 0:
-        print(oo.train_images.shape)
-        print(sample_vector.shape)
         oo.train_images = np.vstack([oo.train_images, sample_vector])
     else:
         oo.train_images = sample_vector.reshape([1, sample_vector.shape[0]])
@@ -758,9 +756,9 @@ def xTrainEncoder(image_ref):
 
 def xTrainEncoderConfidence(image_ref, labels):
     if oo.running_on_osx:
-        img = Image.open(oo.directory_for_train_images + '/' + image_ref).convert('L')  # Greyscale
+        img = Image.open(oo.directory_for_train_images + '/' + image_ref)
     else:
-        img = Image.open(oo.directory_for_train_images + '\\' + image_ref).convert('L')  # Greyscale
+        img = Image.open(oo.directory_for_train_images + '\\' + image_ref)
     print("in xTrainEncoderConfidence")
     print(type(img))
     sample_vector = np.array(img) / 255
@@ -792,9 +790,9 @@ def removeData(index):
 def overwriteData(image_ref, label, index):
     # Open image from path passed in image_ref
     if oo.running_on_osx:
-        img = Image.open(oo.directory_for_train_images + '/' + image_ref).convert('L')  # Greyscale
+        img = Image.open(oo.directory_for_train_images + '/' + image_ref)
     else:
-        img = Image.open(oo.directory_for_train_images + '\\' + image_ref).convert('L')  # Greyscale
+        img = Image.open(oo.directory_for_train_images + '\\' + image_ref)
     # Create an array with pixel values from image opened
     sample_vector = np.array(img).ravel() / 255
     print(index, oo.train_images.shape)
