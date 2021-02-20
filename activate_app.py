@@ -494,8 +494,8 @@ def getConfidenceDistanceTrainBatch(size, method_of_conf_select='least_confidenc
 def computeTsneAndPcaDistances():
     # For each distance metric, we want a table that illustrates the following:
     # X VALUE, Y VALUE, ACTUAL LABEL, PREDICTED LABEL, USER LABEL
-    X = np.array(oo.x_train)
-    Y = np.array(oo.y_train)
+    X = np.array(oo.train_images)
+    Y = np.array(oo.train_labels)
     actual_labels = Y.argmax(axis=1).reshape([X.shape[0], 1])
     print(actual_labels[0])
     user_labels = np.ones([actual_labels.shape[0], 1]) * -1
@@ -624,11 +624,11 @@ def oneHotEncoder(label):
     temp_train[label] = 1
     temp_train = temp_train.reshape([1, oo.number_of_classes])
     print("temp_train:", temp_train)
-    if (len(oo.y_train) > 0):
-        oo.y_train = np.vstack([oo.y_train, temp_train])
+    if (len(oo.train_labels) > 0):
+        oo.train_labels = np.vstack([oo.train_labels, temp_train])
     else:
-        oo.y_train = temp_train
-    print("y_train shape:", oo.y_train.shape)
+        oo.train_labels = temp_train
+    print("train_labels shape:", oo.train_labels.shape)
     return temp_train
 
 
@@ -646,7 +646,7 @@ def keras_current_model_prediction(sample_batch):
             img = Image.open(oo.directory_for_train_images + '\\' + sample_batch[i]).convert('L')  # Greyscale
         # Create an array with pixel values from image opened
         sample_vector = np.array(img).ravel() / 255
-        # Appends to x_train
+        # Appends to train_images
         if (len(oo.temp_test) > 0):
             oo.temp_test = np.vstack([oo.temp_test, sample_vector])
         else:
@@ -657,7 +657,7 @@ def keras_current_model_prediction(sample_batch):
 
     node_data = []
 
-    # Assign predictions to y_train per models outcome:
+    # Assign predictions to train_labels per models outcome:
     for i in range(len(sample_batch)):
         # print ("Predict for case ", i )
 
@@ -695,15 +695,15 @@ def keras_current_convnet_model_prediction(sample_batch):
             img = Image.open(oo.directory_for_train_images + '\\' + sample_batch[i]).convert('L')  # Greyscale
         # Create an array with pixel values from image opened
         sample_vector = np.array(img).ravel() / 255
-        # Appends to x_train
+        # Appends to train_images
         if (len(oo.temp_test) > 0):
             oo.temp_test = np.vstack([oo.temp_test, sample_vector])
         else:
             oo.temp_test = sample_vector.reshape([1, sample_vector.shape[0]])
 
-        # np.append(x_train, sample_vector)
-    # reshape x_train
-    # x_train = x_train.reshape(int(len(x_train)/784), 784)
+        # np.append(train_images, sample_vector)
+    # reshape train_images
+    # train_images = train_images.reshape(int(len(train_images)/784), 784)
 
     print("Sample to run current model on ", oo.temp_test.shape)
 
@@ -712,7 +712,7 @@ def keras_current_convnet_model_prediction(sample_batch):
 
     node_data = []
 
-    # Assign predictions to y_train per models outcome:
+    # Assign predictions to train_labels per models outcome:
     for i in range(len(sample_batch)):
         print("Predict for case ", i)
 
@@ -746,14 +746,14 @@ def xTrainEncoder(image_ref):
         img = Image.open(oo.directory_for_train_images + '\\' + image_ref).convert('L')  # Greyscale
     print("xTrainEncoder: ")
     sample_vector = np.array(img).ravel() / 255
-    if len(oo.x_train) > 0:
-        print(oo.x_train.shape)
+    if len(oo.train_images) > 0:
+        print(oo.train_images.shape)
         print(sample_vector.shape)
-        oo.x_train = np.vstack([oo.x_train, sample_vector])
+        oo.train_images = np.vstack([oo.train_images, sample_vector])
     else:
-        oo.x_train = sample_vector.reshape([1, sample_vector.shape[0]])
-    print("X Train size: ", oo.x_train.shape)
-    oo.batch_total = oo.x_train.shape[0]
+        oo.train_images = sample_vector.reshape([1, sample_vector.shape[0]])
+    print("X Train size: ", oo.train_images.shape)
+    oo.batch_total = oo.train_images.shape[0]
 
 
 def xTrainEncoderConfidence(image_ref, labels):
@@ -773,20 +773,20 @@ def xTrainEncoderConfidence(image_ref, labels):
     counter = 0
     for X_gen, Y_gen in datagen.flow(sample_vector, labels, batch_size=1):
         sample_vector = X_gen.reshape([1, -1])
-        if (len(oo.x_train) > 0):
-            oo.x_train = np.vstack([oo.x_train, sample_vector])
+        if (len(oo.train_images) > 0):
+            oo.train_images = np.vstack([oo.train_images, sample_vector])
         else:
-            oo.x_train = sample_vector
+            oo.train_images = sample_vector
         break
 
-    print("X Train size: ", oo.x_train.shape)
-    oo.batch_total = oo.x_train.shape[0]
+    print("X Train size: ", oo.train_images.shape)
+    oo.batch_total = oo.train_images.shape[0]
 
 
 def removeData(index):
     # overwrite both the image and label vector at index passed
-    oo.x_train = np.delete(oo.x_train, index, axis=0)
-    oo.y_train = np.delete(oo.y_train, index, axis=0)
+    oo.train_images = np.delete(oo.train_images, index, axis=0)
+    oo.train_labels = np.delete(oo.train_labels, index, axis=0)
 
 
 def overwriteData(image_ref, label, index):
@@ -797,15 +797,15 @@ def overwriteData(image_ref, label, index):
         img = Image.open(oo.directory_for_train_images + '\\' + image_ref).convert('L')  # Greyscale
     # Create an array with pixel values from image opened
     sample_vector = np.array(img).ravel() / 255
-    print(index, oo.x_train.shape)
-    x_train[index, :] = sample_vector
-    # x_length = int(len(x_train))
-    # x_train = x_train.reshape(x_length, 784)
+    print(index, oo.train_images.shape)
+    train_images[index, :] = sample_vector
+    # x_length = int(len(train_images))
+    # train_images = train_images.reshape(x_length, 784)
     temp_train = np.eye(oo.number_of_classes)[label]
-    oo.y_train[index, :] = temp_train
-    print(index, oo.y_train.shape)
-    # y_length = int(len(y_train))
-    # y_train = y_train.reshape(y_length, 10)
+    oo.train_labels[index, :] = temp_train
+    print(index, oo.train_labels.shape)
+    # y_length = int(len(train_labels))
+    # train_labels = train_labels.reshape(y_length, 10)
 
 
 def set_batch_total(n):
@@ -849,7 +849,7 @@ def get_conf_matrix():
     return json.dumps(oo.conf_matrix)
 
 
-def keras_logreg(state, X_train, Y_train, file_set):
+def keras_logreg(state, train_images, train_labels, file_set):
     iep = int(oo.epochs)
     ibi = int(oo.batches_in)
     ibs = int(oo.batch_size)
@@ -867,14 +867,14 @@ def keras_logreg(state, X_train, Y_train, file_set):
         return model
 
     print("Start of Keras logreg method")
-    print("x_train", X_train.shape)
-    print("y_train", Y_train.shape)
+    print("train_images", train_images.shape)
+    print("train_labels", train_labels.shape)
 
-    X_test = oo.x_test.reshape(-1, input_dim)
-    Y_test = oo.y_test.reshape(-1, nb_classes)
+    test_images = oo.test_images.reshape(-1, input_dim)
+    test_labels = oo.test_labels.reshape(-1, nb_classes)
 
-    print("x_test", X_test.shape)
-    print("y_test", Y_test.shape)
+    print("test_images", test_images.shape)
+    print("test_labels", test_labels.shape)
 
     if state > 0:
         model = model_from_json(open(oo.keras_model_filename[file_set]).read())
@@ -889,11 +889,11 @@ def keras_logreg(state, X_train, Y_train, file_set):
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
 
-    history = model.fit(X_train, Y_train,
+    history = model.fit(train_images, train_labels,
                         batch_size=batch_size, epochs=nb_epoch,
-                        verbose=1, validation_data=(X_test, Y_test))
+                        verbose=1, validation_data=(test_images, test_labels))
 
-    score = model.evaluate(X_test, Y_test, verbose=1)
+    score = model.evaluate(test_images, test_labels, verbose=1)
 
     print(score)
     print('Test loss:', score[0])
@@ -904,16 +904,16 @@ def keras_logreg(state, X_train, Y_train, file_set):
 
     predict_vals = []
     actual_vals = []
-    for i in range(Y_test.shape[0]):
-        actual_vals.append(np.argmax(Y_test[i]))
-        predict = model.predict(X_test[i].reshape(1, 784))
+    for i in range(test_labels.shape[0]):
+        actual_vals.append(np.argmax(test_labels[i]))
+        predict = model.predict(test_images[i].reshape(1, 784))
 
         predict_vals.append(np.argmax(predict[0]))
     generate_confusion_matrix(predict_vals, actual_vals)
 
     #### Simple way to get the output layer of network, and the predicted label
-    print("Actual -- Label:", np.argmax(Y_test[0]), "Values:", Y_test[0])
-    predict = model.predict(X_test[0].reshape(1, 784))
+    print("Actual -- Label:", np.argmax(test_labels[0]), "Values:", test_labels[0])
+    predict = model.predict(test_images[0].reshape(1, 784))
     print("Predict -- Label:", np.argmax(predict[0]), "Values:", predict, "Confidence:", np.max(predict[0]))
 
     # save model as json and yaml
@@ -946,11 +946,11 @@ def keras_logreg_predicted_labels(state, input_data, output_labels, file_set):
     print("input_data", input_data.shape)
     print("output_labels", output_labels.shape)
 
-    X_test = (oo.x_test).reshape(-1, input_dim)
-    Y_test = (oo.y_test).reshape(-1, nb_classes)
+    test_images = (oo.test_images).reshape(-1, input_dim)
+    test_labels = (oo.test_labels).reshape(-1, nb_classes)
 
-    print("x_test", X_test.shape)
-    print("y_test", Y_test.shape)
+    print("test_images", test_images.shape)
+    print("test_labels", test_labels.shape)
 
     if state > 0:
         model = model_from_json(open(oo.keras_model_filename[file_set]).read())
@@ -967,9 +967,9 @@ def keras_logreg_predicted_labels(state, input_data, output_labels, file_set):
 
     history = model.fit(input_data, output_labels,
                         batch_size=batch_size, epochs=nb_epoch,
-                        verbose=1, validation_data=(X_test, Y_test))
+                        verbose=1, validation_data=(test_images, test_labels))
 
-    score = model.evaluate(X_test, Y_test, verbose=1)
+    score = model.evaluate(test_images, test_labels, verbose=1)
 
     print(score)
     print('Test loss:', score[0])
@@ -979,8 +979,8 @@ def keras_logreg_predicted_labels(state, input_data, output_labels, file_set):
     # print (outputs)
 
     #### Simple way to get the output layer of network, and the predicted label
-    print("Actual -- Label:", np.argmax(Y_test[0]), "Values:", Y_test[0])
-    predict = model.predict(X_test[0].reshape(1, 784))
+    print("Actual -- Label:", np.argmax(test_labels[0]), "Values:", test_labels[0])
+    predict = model.predict(test_images[0].reshape(1, 784))
     print("Predict -- Label:", np.argmax(predict[0]), "Values:", predict, "Confidence:", np.max(predict[0]))
 
     # save model as json and yaml
@@ -991,7 +991,7 @@ def keras_logreg_predicted_labels(state, input_data, output_labels, file_set):
     return score[1]
 
 
-def keras_convnet(state, X_train, Y_train, file_set):
+def keras_convnet(state, train_images, train_labels, file_set):
     iep = int(oo.epochs)
     ibi = int(oo.batches_in)
     ibs = int(oo.batch_size)
@@ -1020,14 +1020,14 @@ def keras_convnet(state, X_train, Y_train, file_set):
     input_dim_convnet = (img_rows, img_cols, 1)
 
     print("Start of Keras convnet method")
-    print("x_train", X_train.shape)
-    print("y_train", Y_train.shape)
+    print("train_images", train_images.shape)
+    print("train_labels", train_labels.shape)
 
-    X_test = (oo.x_test).reshape((oo.x_test).shape[0], img_rows, img_cols, 1)
-    Y_test = (oo.y_test).reshape(-1, nb_classes)
+    test_images = (oo.test_images).reshape((oo.test_images).shape[0], img_rows, img_cols, 1)
+    test_labels = (oo.test_labels).reshape(-1, nb_classes)
 
-    print("x_test", X_test.shape)
-    print("y_test", Y_test.shape)
+    print("test_images", test_images.shape)
+    print("test_labels", test_labels.shape)
 
     if state > 0:
         model = model_from_json(open(oo.keras_model_filename[file_set]).read())
@@ -1042,11 +1042,11 @@ def keras_convnet(state, X_train, Y_train, file_set):
                   optimizer=keras.optimizers.Adadelta(),
                   metrics=['accuracy'])
 
-    history = model.fit(X_train, Y_train,
+    history = model.fit(train_images, train_labels,
                         batch_size=batch_size, epochs=nb_epoch,
-                        verbose=1, validation_data=(X_test, Y_test))
+                        verbose=1, validation_data=(test_images, test_labels))
 
-    score = model.evaluate(X_test, Y_test, verbose=1)
+    score = model.evaluate(test_images, test_labels, verbose=1)
 
     print(score)
     print('Test loss:', score[0])
@@ -1054,16 +1054,16 @@ def keras_convnet(state, X_train, Y_train, file_set):
 
     predict_vals = []
     actual_vals = []
-    for i in range(Y_test.shape[0]):
-        actual_vals.append(np.argmax(Y_test[i]))
-        predict = model.predict(X_test[i].reshape(-1, img_rows, img_cols, 1))
+    for i in range(test_labels.shape[0]):
+        actual_vals.append(np.argmax(test_labels[i]))
+        predict = model.predict(test_images[i].reshape(-1, img_rows, img_cols, 1))
 
         predict_vals.append(np.argmax(predict[0]))
     generate_confusion_matrix(predict_vals, actual_vals)
 
     #### Simple way to get the output layer of network, and the predicted label
-    print("Actual -- Label:", np.argmax(Y_test[0]), "Values:", Y_test[0])
-    predict = model.predict(X_test[0].reshape(-1, img_rows, img_cols, 1))
+    print("Actual -- Label:", np.argmax(test_labels[0]), "Values:", test_labels[0])
+    predict = model.predict(test_images[0].reshape(-1, img_rows, img_cols, 1))
     print("Predict -- Label:", np.argmax(predict[0]), "Values:", predict, "Confidence:", np.max(predict[0]))
 
     # save model as json and yaml
@@ -1102,18 +1102,18 @@ def keras_convnet_predicted_labels(state, input_data, output_labels, file_set):
     img_cols = 28
     input_dim_convnet = (img_rows, img_cols, 1)
 
-    X_train = input_data.reshape(-1, img_rows, img_cols, 1)
-    Y_train = output_labels.reshape(-1, nb_classes)
+    train_images = input_data.reshape(-1, img_rows, img_cols, 1)
+    train_labels = output_labels.reshape(-1, nb_classes)
 
     print("Start of Keras convnet method")
-    print("x_train", X_train.shape)
-    print("y_train", Y_train.shape)
+    print("train_images", train_images.shape)
+    print("train_labels", train_labels.shape)
 
-    X_test = (oo.x_test).reshape((oo.x_test).shape[0], img_rows, img_cols, 1)
-    Y_test = (oo.y_test).reshape(-1, nb_classes)
+    test_images = (oo.test_images).reshape((oo.test_images).shape[0], img_rows, img_cols, 1)
+    test_labels = (oo.test_labels).reshape(-1, nb_classes)
 
-    print("x_test", X_test.shape)
-    print("y_test", Y_test.shape)
+    print("test_images", test_images.shape)
+    print("test_labels", test_labels.shape)
 
     if state > 0:
         model = model_from_json(open(oo.keras_model_filename[file_set]).read())
@@ -1128,11 +1128,11 @@ def keras_convnet_predicted_labels(state, input_data, output_labels, file_set):
                   optimizer=keras.optimizers.Adadelta(),
                   metrics=['accuracy'])
 
-    history = model.fit(X_train, Y_train,
+    history = model.fit(train_images, train_labels,
                         batch_size=batch_size, epochs=nb_epoch,
-                        verbose=1, validation_data=(X_test, Y_test))
+                        verbose=1, validation_data=(test_images, test_labels))
 
-    score = model.evaluate(X_test, Y_test, verbose=1)
+    score = model.evaluate(test_images, test_labels, verbose=1)
 
     print(score)
     print('Test loss:', score[0])
@@ -1142,8 +1142,8 @@ def keras_convnet_predicted_labels(state, input_data, output_labels, file_set):
     # print (outputs)
 
     #### Simple way to get the output layer of network, and the predicted label
-    print("Actual -- Label:", np.argmax(Y_test[0]), "Values:", Y_test[0])
-    predict = model.predict(X_test[0].reshape(-1, img_rows, img_cols, 1))
+    print("Actual -- Label:", np.argmax(test_labels[0]), "Values:", test_labels[0])
+    predict = model.predict(test_images[0].reshape(-1, img_rows, img_cols, 1))
     print("Predict -- Label:", np.argmax(predict[0]), "Values:", predict, "Confidence:", np.max(predict[0]))
 
     # save model as json and yaml
@@ -1279,7 +1279,7 @@ def update_label():
     output['scatter_y'] = oo.pca_distances[file_id, 2]
     output['label'] = new_label
 
-    output['total_samples'] = str(oo.x_train.shape[0])
+    output['total_samples'] = str(oo.train_images.shape[0])
 
     # Only if a label is produced will the code below run:
     # Check to see if node as been labeled before:
@@ -1292,10 +1292,10 @@ def update_label():
 
         if node_id in oo.id_key:
             index = oo.id_key.index(node_id)
-            # print ("Remove entry from x_train matrix")
+            # print ("Remove entry from train_images matrix")
             # removeData(index)
 
-        output['total_samples'] = str(oo.x_train.shape[0])
+        output['total_samples'] = str(oo.train_images.shape[0])
         return json.dumps(output)
 
     ### COMMENTED OUT FOR THE MOMENT - THIS DEALS WITH WHEN AN EXISTING INSTANCE
@@ -1311,8 +1311,8 @@ def update_label():
             oo.id_key.append(node_id)
             # if oo.use_confidence:
             #    generate_samples_based_on_confidence(new_label, node_image, user_confidence)
-            #    print (" * Size of x_train: ", oo.x_train.shape)
-            #    print (" * Size of y_train: ", oo.y_train.shape)
+            #    print (" * Size of train_images: ", oo.train_images.shape)
+            #    print (" * Size of train_labels: ", oo.train_labels.shape)
             # else:
 
             oneHotEncoder(new_label)
@@ -1338,7 +1338,7 @@ def update_label():
                 with open('confidences.txt', 'a') as thefile:
                     print("{}, {}, {} ".format(file_id, int(new_label), user_confidence), file=thefile)
 
-        output['total_samples'] = str(oo.x_train.shape[0])
+        output['total_samples'] = str(oo.train_images.shape[0])
         return json.dumps(output)
 
 
@@ -1461,9 +1461,9 @@ def train_model_using_all_methods():
 
     oo.train_step_log = oo.train_step_log + 1
 
-    print("Just to check we have not modified x_train and y_train")
-    print("  x_train shape:", oo.x_train.shape)
-    print("  y_train shape:", oo.y_train.shape)
+    print("Just to check we have not modified train_images and train_labels")
+    print("  train_images shape:", oo.train_images.shape)
+    print("  train_labels shape:", oo.train_labels.shape)
 
     output['sample_size'] = oo.batch_size
 
@@ -1474,23 +1474,23 @@ def train_model_using_all_methods():
 
 
 def perform_standard_generator():
-    shape_of_x_train = np.array(oo.x_train).shape
-    print("shape_of_x_train", shape_of_x_train)
-    loop_count = oo.x_train.shape[0]
+    shape_of_train_images = np.array(oo.train_images).shape
+    print("shape_of_train_images", shape_of_train_images)
+    loop_count = oo.train_images.shape[0]
 
     batch_size = 32
     print("Batch size:", batch_size)
 
-    X_train = np.array(oo.x_train).reshape(-1, 28, 28, 1)
-    Y_train = np.array(oo.y_train).reshape(-1, 10)
-    print("X_train shape:", X_train.shape)
-    print("Y_train shape:", Y_train.shape)
+    train_images = np.array(oo.train_images).reshape(-1, 28, 28, 1)
+    train_labels = np.array(oo.train_labels).reshape(-1, 10)
+    print("train_images shape:", train_images.shape)
+    print("train_labels shape:", train_labels.shape)
 
     batches = 0
     newX = []
     newY = []
 
-    for X_gen, Y_gen in datagen.flow(X_train, Y_train, batch_size=batch_size):
+    for X_gen, Y_gen in datagen.flow(train_images, train_labels, batch_size=batch_size):
         print(X_gen.shape, Y_gen.shape)
         if batches == 0:
             newX = X_gen
@@ -1509,25 +1509,25 @@ def perform_standard_generator():
 
 
 def perform_confidence_generator():
-    shape_of_x_train = np.array(oo.x_train).shape
-    print("shape_of_x_train", shape_of_x_train)
+    shape_of_train_images = np.array(oo.train_images).shape
+    print("shape_of_train_images", shape_of_train_images)
     batch_size = 32
 
-    loop_count = oo.x_train.shape[0]
+    loop_count = oo.train_images.shape[0]
 
     Xconf = []
     Yconf = []
 
     print("len(oo.confidence_scores): ", len(oo.confidence_scores))
-    print("oo.x_train.shape:", oo.x_train.shape)
+    print("oo.train_images.shape:", oo.train_images.shape)
 
     for i in range(len(oo.confidence_scores)):
 
         conf_score = int(oo.confidence_scores[i] * oo.confidence_weight)
         print("i:", i, "conf score:", conf_score)
 
-        Xreps = np.tile(oo.x_train[i, :], (conf_score, 1))
-        Yreps = np.tile(oo.y_train[i, :], (conf_score, 1))
+        Xreps = np.tile(oo.train_images[i, :], (conf_score, 1))
+        Yreps = np.tile(oo.train_labels[i, :], (conf_score, 1))
 
         print("Xreps.shape:", Xreps.shape)
 
@@ -1541,14 +1541,14 @@ def perform_confidence_generator():
     print("Xconf shape:", Xconf.shape)
     print("Yconf shape:", Yconf.shape)
 
-    X_train = np.array(Xconf).reshape(-1, 28, 28, 1)
-    Y_train = np.array(Yconf).reshape(-1, 10)
-    print("X_train shape:", X_train.shape)
-    print("Y_train shape:", Y_train.shape)
+    train_images = np.array(Xconf).reshape(-1, 28, 28, 1)
+    train_labels = np.array(Yconf).reshape(-1, 10)
+    print("train_images shape:", train_images.shape)
+    print("train_labels shape:", train_labels.shape)
     batches = 0
     newX = []
     newY = []
-    for X_gen, Y_gen in datagen.flow(X_train, Y_train, batch_size=batch_size):
+    for X_gen, Y_gen in datagen.flow(train_images, train_labels, batch_size=batch_size):
         print(X_gen.shape, Y_gen.shape)
         if batches == 0:
             newX = X_gen
@@ -1575,26 +1575,26 @@ def train_model_using_user_labels():
         if oo.use_sample_generator == 'standard':
             print("Use logreg with standard generator")
             newX, newY = perform_standard_generator()
-            X_train = newX.reshape(-1, 784)
-            Y_train = newY.reshape(-1, 10)
-            print("X_train shape:", X_train.shape)
-            print("Y_train shape:", Y_train.shape)
-            accuracy = keras_logreg(oo.train_step_log, X_train, Y_train, file_set=2)
+            train_images = newX.reshape(-1, 784)
+            train_labels = newY.reshape(-1, 10)
+            print("train_images shape:", train_images.shape)
+            print("train_labels shape:", train_labels.shape)
+            accuracy = keras_logreg(oo.train_step_log, train_images, train_labels, file_set=2)
 
         elif oo.use_sample_generator == 'confidence':
             print("Use logres with confidence generator")
             newX, newY = perform_confidence_generator()
 
-            X_train = newX.reshape(-1, 784)
-            Y_train = newY.reshape(-1, 10)
-            print("X_train shape:", X_train.shape)
-            print("Y_train shape:", Y_train.shape)
-            accuracy = keras_logreg(oo.train_step_log, X_train, Y_train, file_set=3)
+            train_images = newX.reshape(-1, 784)
+            train_labels = newY.reshape(-1, 10)
+            print("train_images shape:", train_images.shape)
+            print("train_labels shape:", train_labels.shape)
+            accuracy = keras_logreg(oo.train_step_log, train_images, train_labels, file_set=3)
 
         elif oo.use_sample_generator == 'none':
-            X_train = np.array(oo.x_train).reshape(-1, 784)
-            Y_train = np.array(oo.y_train).reshape(-1, 10)
-            accuracy = keras_logreg(oo.train_step_log, X_train, Y_train, file_set=0)
+            train_images = np.array(oo.train_images).reshape(-1, 784)
+            train_labels = np.array(oo.train_labels).reshape(-1, 10)
+            accuracy = keras_logreg(oo.train_step_log, train_images, train_labels, file_set=0)
             # oo.train_step_log = oo.train_step_log + 1
     elif oo.use_convnet == 'kerasconvnet':
         if oo.use_sample_generator == 'standard':
@@ -1602,30 +1602,30 @@ def train_model_using_user_labels():
 
             newX, newY = perform_standard_generator()
 
-            X_train = newX.reshape(-1, 28, 28, 1)
-            Y_train = newY.reshape(-1, 10)
-            print("X_train shape:", X_train.shape)
-            print("Y_train shape:", Y_train.shape)
-            accuracy = keras_convnet(oo.train_step_log, X_train, Y_train, file_set=2)
+            train_images = newX.reshape(-1, 28, 28, 1)
+            train_labels = newY.reshape(-1, 10)
+            print("train_images shape:", train_images.shape)
+            print("train_labels shape:", train_labels.shape)
+            accuracy = keras_convnet(oo.train_step_log, train_images, train_labels, file_set=2)
 
         elif oo.use_sample_generator == 'confidence':
             print("Use convnet with confidence generator")
 
             newX, newY = perform_confidence_generator()
 
-            X_train = newX.reshape(-1, 28, 28, 1)
-            Y_train = newY.reshape(-1, 10)
-            print("X_train shape:", X_train.shape)
-            print("Y_train shape:", Y_train.shape)
-            accuracy = keras_convnet(oo.train_step_log, X_train, Y_train, file_set=3)
+            train_images = newX.reshape(-1, 28, 28, 1)
+            train_labels = newY.reshape(-1, 10)
+            print("train_images shape:", train_images.shape)
+            print("train_labels shape:", train_labels.shape)
+            accuracy = keras_convnet(oo.train_step_log, train_images, train_labels, file_set=3)
 
         elif oo.use_sample_generator == 'none':
-            X_train = np.array(oo.x_train).reshape(-1, 28, 28, 1)
-            Y_train = np.array(oo.y_train).reshape(-1, 10)
-            accuracy = keras_convnet(oo.train_step_log, X_train, Y_train, file_set=0)
+            train_images = np.array(oo.train_images).reshape(-1, 28, 28, 1)
+            train_labels = np.array(oo.train_labels).reshape(-1, 10)
+            accuracy = keras_convnet(oo.train_step_log, train_images, train_labels, file_set=0)
             # oo.train_step_log = oo.train_step_log + 1
 
-    output['samples'] = len(oo.x_train)
+    output['samples'] = len(oo.train_images)
     output['accuracy'] = int(accuracy * 100)
     return json.dumps(output)
 
@@ -1634,8 +1634,8 @@ def train_model_using_user_labels():
 def train_model_using_predicted_labels():
     print("Train the model using the predicted labels for the complete training dataset")
 
-    X = np.array(oo.x_train)
-    Y = np.array(oo.y_train)
+    X = np.array(oo.train_images)
+    Y = np.array(oo.train_labels)
 
     print("Y size:", Y.shape)
 
@@ -1904,13 +1904,13 @@ def shutdown():
 def index():
     global oo
     print("Previous batch size:", oo.getBatchTotal())
-    print("x_train:", oo.x_train.shape)
+    print("train_images:", oo.train_images.shape)
     import activate_config
     reload(activate_config)
     from activate_config import Options
     oo = Options()
     print("Current batch size:", oo.getBatchTotal())
-    print("x_train:", oo.x_train.shape)
+    print("train_images:", oo.train_images.shape)
     computeTsneAndPcaDistances()
     print("id_key: ", oo.id_key)
     oo.results_file = "results_" + str(datetime.datetime.now())
@@ -1940,6 +1940,6 @@ if __name__ == "__main__":
             port_number = int(sys.argv[2])
 
     print("Running on port number: ", port_number)
-    print("http://127.0.0.1:", port_number, "/")
+    print("http://127.0.0.1:" + str(port_number) + "/")
 
     app.run(host='0.0.0.0', port=port_number, debug=True)

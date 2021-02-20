@@ -64,10 +64,10 @@ class Options:
     id_key = []
     total_test_sample_ref = []
     total_train_sample_ref = []
-    x_train = np.zeros([0, 784])
-    y_train = np.zeros([0, 10])
-    x_test = []  # np.zeros([1,784])
-    y_test = []  # np.zeros([1,10])
+    train_images = np.zeros([0, 784])
+    train_labels = np.zeros([0, 10])
+    test_images = []  # np.zeros([1,784])
+    test_labels = []  # np.zeros([1,10])
 
     temp_test = []
     confidence_scores = []
@@ -107,30 +107,31 @@ class Options:
 
     # Load data set
     # (training image, training lables), (test images, test labels)
-    (x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
-    x_train, x_test = x_train / 255.0, x_test / 255.0
+    (train_images, train_labels), (test_images, test_labels) = keras.datasets.cifar10.load_data()
+    # Normalise vals
+    train_images, test_images = train_images / 255.0, test_images / 255.0
 
     # Reshape
-    x_train = np.delete(x_train, np.s_[total_train_pool:], axis=0)
+    train_images = np.delete(train_images, np.s_[total_train_pool:], axis=0)
     # Dynamic reshape size
-    temp = int(x_train.size / total_train_pool)
+    temp = int(train_images.size / total_train_pool)
 
-    x_train = x_train.reshape(total_train_pool, temp)
-    x_test = x_test.reshape(total_test_pool, temp)
+    train_images = train_images.reshape(total_train_pool, temp)
+    test_images = test_images.reshape(total_test_pool, temp)
 
     # Convert new style labels back to binary array of [0,9]
     temp = []
-    y_train = np.delete(y_train, np.s_[total_train_pool:], axis=0)
-    for value in y_train:
+    train_labels = np.delete(train_labels, np.s_[total_train_pool:], axis=0)
+    for value in train_labels:
         temp.append(get_label_array(int(value)))
 
-    y_train = np.array(temp)
+    train_labels = np.array(temp)
 
     del temp[:]
-    for value in y_test:
+    for value in test_labels:
         temp.append(get_label_array(int(value)))
 
-    y_test = np.array(temp)
+    test_labels = np.array(temp)
 
     if running_on_osx:
         directory_for_test_images = "static/images/cifar10_noclass/test"
