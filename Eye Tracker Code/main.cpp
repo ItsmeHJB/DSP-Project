@@ -22,6 +22,30 @@ struct Focus
     size_t           count = 0;
 };
 
+class GazeEvent
+{
+    IL::InteractorId id;
+    IL::Timestamp start;
+    IL::Timestamp duration;
+    IL::Timestamp end;
+    IL::Timestamp interfixDur;
+    float horizontalPos;
+    float vertPos;
+
+    public:
+    void set_values (IL::InteractorId, IL::Timestamp, IL::Timestamp, IL::Timestamp, IL::Timestamp, float, float);
+};
+
+void GazeEvent::set_values (IL::InteractorId id, IL::Timestamp start, IL::Timestamp duration, IL::Timestamp end, IL::Timestamp interFixDur, float hori, float vert) {
+    this->id = id;
+    this->start = start;
+    this->duration = duration;
+    this->end = end;
+    this->interfixDur = interFixDur;
+    this->horizontalPos = hori;
+    this->vertPos = vert;
+}
+
 // Functions
 bool compFocusCount(Focus obj1, Focus obj2) { return obj1.count<obj2.count; }
 
