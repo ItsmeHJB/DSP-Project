@@ -8,11 +8,28 @@
 // c++ headers
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 // Custom headers
 #include <interaction_lib/InteractionLib.h>
 #include <interaction_lib/misc/InteractionLibPtr.h>
 
+// Structs
+// this struct is used to maintain a focus count
+struct Focus
+{
+    IL::InteractorId id    = IL::EmptyInteractorId();
+    size_t           count = 0;
+};
+
+// Functions
+bool compFocusCount(Focus obj1, Focus obj2) { return obj1.count<obj2.count; }
+
+Focus FindMaxFoucses(std::vector<Focus> focusVec, const int count) {
+    return *std::max_element(std::begin(focusVec), std::end(focusVec), compFocusCount);
+}
+
+// Main
 int main()
 {
     // create the interaction library
@@ -35,7 +52,6 @@ int main()
     intlib->CoordinateTransformAddOrUpdateDisplayArea(windowWidth, windowHeight);
     intlib->CoordinateTransformSetOriginOffset(offset, offset);
 
-    // TODO: begin working on splitting the screen into X interactor chunks
     // set numnber of interactor rows and columns
     // assuming they're all the same size
     const int columns = 3;
@@ -44,12 +60,6 @@ int main()
     const float boxWidth = windowWidth / columns;
     const float boxHeight = windowHeight / rows;
 
-    // this struct is used to maintain a focus count
-    struct Focus
-    {
-        IL::InteractorId id    = IL::EmptyInteractorId();
-        size_t           count = 0;
-    };
     std::vector<Focus> focusVec;
 
     // Begin setup of interactors
@@ -113,12 +123,15 @@ int main()
 
     constexpr size_t max_focus_count = 3;
 
-    while (focus.count < max_focus_count)
+    while (FindMaxFoucses(focusVec, count).count < max_focus_count)
     {
         intlib->WaitAndUpdate();
     }
 
-    std::cout << "Interactor " << focus.id << " got focused " << focus.count << " times\n";
+    for (size_t i = 0; i < count; i++)
+    {
+        std::cout << "Interactor " << focusVec[i].id << " got focused " << focusVec[i].count << " times\n";
+    }
 
     system("pause");
 }
