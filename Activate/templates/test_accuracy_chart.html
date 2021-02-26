@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>ActiVAte</title>
+  <link rel="stylesheet" href="./static/lib/css/bootstrap.min.css">
+  <link rel="stylesheet" href="./static/lib/css/keen-dashboards.css">
+  <link rel="stylesheet" href="./static/lib/css/dc.css">
+  <link rel="stylesheet" href="./static/css/custom.css">
+
+  <script src="./static/lib/js/jquery.js"></script>
+  <script src="./static/lib/js/bootstrap.min.js"></script>
+
+  <script src="./static/lib/js/d3.js"></script>
+
+  <script src="./static/lib/js/queue.js"></script>
+  <script src="./static/lib/js/keen.min.js"></script>
+
+  <!-- <link rel="stylesheet" href="//cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css"> -->
+  
+  <!-- <script src="//cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script> -->
+
+
+
+  <script src='./static/js/classifier_view_v3.js' type='text/javascript'></script>
+  <script src='./static/js/accuracy_view_v2.js' type='text/javascript'></script>
+  <script src='./static/js/scatter_view_v2.js' type='text/javascript'></script>
+
+</head>
+
+<style>
+  .links line {
+    stroke: #999;
+    stroke-opacity: 0.6;
+  }
+
+  .nodes circle {
+    stroke: #fff;
+    stroke-width: 1.5px;
+  }
+
+  .bar {
+    fill: steelblue;
+  }
+
+  .bar:hover {
+    fill: brown;
+  }
+
+  .axis--x path {
+    display: none;
+  }
+
+  text {
+    font: 10px Verdana, Helvetica, Arial, sans-serif;
+  }
+
+  tspan {
+    fill: black;
+    font-weight: bold
+  }
+
+  .inputBox {
+    height: 26px;
+    width: 80px;
+    font-size: 10pt;
+  }
+  /* 13. Basic Styling with CSS */
+  /* Style the lines by removing the fill and applying a stroke */
+  /*.line {
+    fill: none;
+    stroke: #ffab00;
+    stroke-width: 3;
+  }
+  /* Style the dots by assigning a fill and stroke */
+
+  .dot {
+    fill: #ffab00;
+    stroke: #fff;
+  }
+
+  .button {
+    height: 40px;
+    background-color: #2daebf;
+    display: inline-block;
+    padding: 5px 10px 6px;
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    line-height: 1;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    text-shadow: 0 -1px 1px rgba(0,0,0,0.25);
+    border-bottom: 1px solid rgba(0,0,0,0.25);
+    position: relative;
+    cursor: pointer;
+}
+
+  .large_font {
+    display: inline-block;
+    font-weight: bold;
+    font: 32px Verdana, Helvetica, Arial, sans-serif;
+  }
+
+  th, td {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+
+</style>
+
+<script>
+
+var train_step_log = 0
+
+line_plot_colours = ['#66c2a5','#fc8d62','#8da0cb','#e78ac3','#a6d854'];
+
+
+  function setQuerySize() {
+    batch_size = parseInt(document.getElementById("query_size_input").value)
+    console.log('set batch size', batch_size)
+    $.ajax({
+      url: "set_batch_size",
+      data: {
+        "batch_size_input": batch_size
+      },
+      success: function(data) {
+        console.log("success", JSON.parse(data));
+        // document.getElementById("sample_total-out").innerHTML = batch_total;
+      }
+    });
+  } //end setQuerySize
+
+  function setEpoch() {
+    epoch_num = 20; //parseInt(document.getElementById("epoch_input").value)
+    $.ajax({
+      url: "set_epoch",
+      data: {
+        "epoch_num": epoch_num
+      }
+    });
+  } //end setEpoch
+
+  function setBatchesIn() {
+    batches_in = 32; //parseInt(document.getElementById("batches_in_input").value)
+    $.ajax({
+      url: "set_batches_in",
+      data: {
+        "batches_in": batches_in
+      }
+    });
+  } //end setBatchesIn
+
+  function getBatchTotal() {
+    $.ajax({
+      url: "get_batch_total",
+      success: function(data) {
+        all_data = JSON.parse(data);
+        batch_total = all_data['batch_total']
+        // document.getElementById("sample_total-out").innerHTML = batch_total;
+      }
+    });
+  }
+
+  function getTrainStepLog() {
+    $.ajax({
+      url: "get_train_step_log",
+      success: function(data) {
+        all_data = JSON.parse(data);
+        train_step_log = parseInt(all_data['train_step_log'])
+        document.getElementById("step-out").innerHTML = train_step_log;
+      }
+    });
+  }
+
+  function getSamplesUsingDistance() {
+    $.ajax({
+      url: "get_distance_batch",
+      success: function(data) {
+        console.log("HERE WE ARE - back from get_distance_batch")
+        all_data = JSON.parse(data);
+        console.log(all_data)
+
+        state = parseInt(document.getElementById("step-out").innerHTML)
+        state = parseInt(state)
+        //getBatchTotal()
+        //batch_total = parseInt(document.getElementById("sample_total-out").innerHTML)
+
+        
+        var image_file_ref = [] // Object
+        image_file_ref.push(all_data);
+        
+        console.log(image_file_ref)
+
+        if (state >= 0) {
+          update_classifier_pane_predict(image_file_ref, batch_size); //, batch_total);
+        } else {
+          update_classifier_pane(image_file_ref, batch_size); //, batch_total);
+        }
+      }
+    });
+  }
+
+function getSamplesUsingRandom() {
+    $.ajax({
+      url: "get_random_batch",
+      success: function(data) {
+        console.log("HERE WE ARE - back from get_random_batch")
+        all_data = JSON.parse(data);
+        console.log(all_data)
+
+        state = parseInt(document.getElementById("step-out").innerHTML)
+        state = parseInt(state)
+        //getBatchTotal()
+        //batch_total = parseInt(document.getElementById("sample_total-out").innerHTML)
+
+        
+        var image_file_ref = [] // Object
+        image_file_ref.push(all_data);
+        
+        console.log(image_file_ref)
+
+        if (state >= 0) {
+          update_classifier_pane_predict(image_file_ref, batch_size); //, batch_total);
+        } else {
+          update_classifier_pane(image_file_ref, batch_size); //, batch_total);
+        }
+      }
+    });
+  }
+
+function getSamples() {
+    $.ajax({
+      url: "get_samples",
+      success: function(data) {
+        console.log("HERE WE ARE - back from get_samples")
+        all_data = JSON.parse(data);
+        console.log(all_data)
+
+        state = parseInt(document.getElementById("step-out").innerHTML)
+        
+        var image_file_ref = [] // Object
+        image_file_ref.push(all_data);
+        
+        console.log(image_file_ref)
+
+        if (state >= 0) {
+          update_classifier_pane_predict(image_file_ref, batch_size); //, batch_total);
+        } else {
+          update_classifier_pane(image_file_ref, batch_size); //, batch_total);
+        }
+      }
+    });
+  }
+
+  function runAuto() {
+    $.ajax({
+      url: "train_in_auto",
+      success: function() {
+        batch_size = parseInt(document.getElementById("query_size_input").value)
+        document.getElementById("sample_total-out").innerHTML = batch_size
+      }
+    });
+    trainModel()
+  }
+
+  function setTestBatch() {
+    test_size = parseInt(document.getElementById("test_size_input").value)
+    $.ajax({
+      url: "set_test_batch",
+      data: {
+        "test_size_input": test_size
+      }
+    })
+  } 
+
+  function prepareLineGraph() {
+    $.ajax({
+      url: "prepare_line_graph_data",
+      success: function(data) {
+        all_data = JSON.parse(data);
+
+        //var this_data = [] // Object
+        //this_data.push(all_data);
+        //create_line_graph(this_data, "#line_graph-view")
+        create_line_graph_for_all_methods("#line_graph-view")
+      }
+    });
+  }
+
+  function prepareScatterPlot() {
+    $.ajax({
+      url: "prepare_scatter_plot_data",
+      success: function(data) {
+        var scatter_data = JSON.parse(data);
+        create_scatter_plot(scatter_data, "#scatter_plot-view")
+      }
+    });
+  }
+
+  function train_model_using_all_methods() {
+    set_opacity_of_existing_images();
+    destroy_images_with_no_label();
+    
+    $.ajax({
+      url: "train_model_using_all_methods",
+      //beforeSend: function() {
+      //  $('#accuracy-notes').css('background', "url(http://www.cems.uwe.ac.uk/~pa-legg/resources/ajax-loader.gif) no-repeat")
+      //},
+      //complete: function() {
+      //  $('#accuracy-notes').css('background', 'none')
+      //},
+      success: function(data) {
+        all_data = JSON.parse(data);
+        getTrainStepLog();
+
+        keys = Object.keys(all_data)
+        accuracies = {}
+
+        if (keys.indexOf('single_instance') > -1) {
+          accuracies['single_instance'] = all_data['single_instance']['accuracy']
+          document.getElementById("single_instance_score").innerHTML = accuracies['single_instance']
+          document.getElementById("single_instance_score").style.color = line_plot_colours[0]
+        }
+        if (keys.indexOf('inferred_label') > -1) {
+          accuracies['inferred_label'] = all_data['inferred_label']['accuracy']
+          document.getElementById("inferred_score").innerHTML = accuracies['inferred_label']
+          document.getElementById("inferred_score").style.color = line_plot_colours[1]
+        }
+        if (keys.indexOf('data_augmentation') > -1) {
+          accuracies['data_augmentation'] = all_data['data_augmentation']['accuracy']
+          document.getElementById("imageaugment_score").innerHTML = accuracies['data_augmentation']
+          document.getElementById("imageaugment_score").style.color = line_plot_colours[2]
+        }
+        if (keys.indexOf('confidence_augmentation') > -1) {
+          accuracies['confidence_augmentation'] = all_data['confidence_augmentation']['accuracy']
+          document.getElementById("confaugment_score").innerHTML = accuracies['confidence_augmentation']
+          document.getElementById("confaugment_score").style.color = line_plot_colours[3]
+        }
+
+        sample_size = all_data['sample_size']
+
+        accuracies['user_label_counter'] = parseFloat(user_label_counter) / parseFloat(sample_size) * 100;
+
+        line_chart_data = {'samples': total_samples, 'accuracies': accuracies}
+
+        update_line_graph_with_all_methods(line_chart_data);
+        //update_line_graph(all_data, user_label_counter);
+        user_label_array.push(user_label_counter);
+        user_label_counter = 0
+
+        
+      }
+    });
+  }
+
+  function train_model_using_user_labels() {
+    var radioValue = $("input[name = 'MLselect']:checked").val();
+    getTrainStepLog()
+    set_opacity_of_existing_images();
+    destroy_images_with_no_label();
+    
+    $.ajax({
+      url: "train_model_using_user_labels",
+      
+      //beforeSend: function() {
+      //  $('#accuracy-notes').css('background', "url(http://www.cems.uwe.ac.uk/~pa-legg/resources/ajax-loader.gif) no-repeat")
+      //},
+      //complete: function() {
+      //  $('#accuracy-notes').css('background', 'none')
+      //},
+      success: function(data) {
+        all_data = JSON.parse(data);
+        //document.getElementById("class-out").innerHTML = "Complete"
+        document.getElementById("accuracy-out").innerHTML = (all_data['accuracy'] + "%");
+        // console.log(all_data)
+        update_line_graph(all_data, user_label_counter);
+
+        console.log("Train model...");
+        user_label_array.push(user_label_counter);
+        /// Rather than setting to zero, just keep same value
+        ///user_label_counter = 0;
+        console.log("User label array", user_label_array);
+      }
+    });
+  }
+
+  function train_model_using_predicted_labels() {
+    var radioValue = $("input[name = 'MLselect']:checked").val();
+    //document.getElementById("class-out").innerHTML = "Training...";
+    getTrainStepLog()
+
+    set_opacity_of_existing_images();
+    //destroy_images_with_no_label();
+    
+    $.ajax({
+      url: "train_model_using_predicted_labels",
+      success: function(data) {
+        all_data = JSON.parse(data);
+        //document.getElementById("class-out").innerHTML = "Complete"
+        document.getElementById("accuracy-out").innerHTML = (all_data['accuracy'] + "%");
+        // console.log(all_data)
+        update_line_graph(all_data, user_label_counter);
+
+        console.log("Train model...");
+        user_label_array.push(user_label_counter);
+        /// Rather than setting to zero, just keep same value
+        ///user_label_counter = 0;
+        console.log("User label array", user_label_array);
+      }
+    });
+
+    
+
+  } // end trainModel
+
+  function predictPoolLabels() {
+    // given that the user has provided some labels, can we perform k-Means Clustering effectively to provide a label for all other points?
+    console.log("predictPoolLabels");
+    console.log(scatter_data)
+
+    $.ajax({
+      url: "predict_pool_labels",
+      //data: {"scatter_data" : scatter_data},
+      success: function(data) {
+        some_data = JSON.parse(data);
+        console.log(some_data);
+        
+        var total_correct_predictions = 0;
+        var total = 0;
+
+        for (s in some_data['some_data']) {
+          //console.log(s)
+          scatter_data[s][3] = some_data['some_data'][s];
+          total += 1
+          if (scatter_data[s][3] == scatter_data[s][2]) {
+            total_correct_predictions += 1
+          }
+
+        }
+
+        var result = ((total_correct_predictions / total) * 100).toFixed(2);
+        console.log(result)
+        document.getElementById("label-out").innerHTML = result + "%";
+
+
+        console.log(scatter_data);
+        console.log("let us colour_scatter_based_on_prediction")
+        colour_scatter_based_on_prediction();
+      }
+    });
+
+  } // end predictPoolLabels 
+
+  function ml_select(value) {
+    console.log("ml_select: you have selected ", value);
+    $.ajax({
+      url: "ml_select",
+      data: {"ml_select" : value},
+      success: function(data) {
+        some_data = JSON.parse(data);
+      }
+    });
+  }
+
+  function distance_select(value) {
+    console.log("distance_select: you have selected ", value);
+    $.ajax({
+      url: "distance_select",
+      data: {"distance_select" : value},
+      success: function(data) {
+        some_data = JSON.parse(data);
+      }
+    });
+  }
+
+  function sample_selection_method(value) {
+    console.log("sample_selection_method: you have selected ", value);
+    $.ajax({
+      url: "sample_selection_method",
+      data: {"method" : value},
+      success: function(data) {
+        some_data = JSON.parse(data);
+      }
+    });
+  }
+
+  function dimension_select(value) {
+    console.log("dimension_select: you have selected ", value);
+    $.ajax({
+      url: "dimension_select",
+      data: {"dimension_select" : value},
+      success: function(data) {
+        some_data = JSON.parse(data);
+        prepareScatterPlot();
+      }
+    });
+  }
+
+
+  function method_select(value) {
+    value1 = document.getElementById("train_methods_single").checked;
+    value2 = document.getElementById("train_methods_inferred").checked;
+    value3 = document.getElementById("train_methods_data_aug").checked;
+    value4 = document.getElementById("train_methods_conf_aug").checked;
+    console.log("method_select: you have selected ", value1, value2, value3, value4);
+    $.ajax({
+      url: "method_select",
+      data: {"value1" : value1.toString(), 
+              "value2" : value2.toString(),
+              "value3" : value3.toString(),
+              "value4" : value4.toString()
+          },
+      success: function(data) {
+        some_data = JSON.parse(data);
+      }
+    });
+  }
+
+  function get_data_to_populate_line_chart() {
+    $.ajax({
+      url: "get_data_to_populate_line_chart",
+      success: function(data) {
+        all_data = JSON.parse(data);
+
+        for (i in all_data) {
+
+
+          update_line_graph_with_all_methods_from_file(all_data[i]);
+
+          keys = Object.keys(all_data[i]['accuracies'])
+          console.log(keys)
+          accuracies = {}
+
+          if (keys.indexOf('single_instance') > -1) {
+            accuracies['single_instance'] = all_data[i]['accuracies']['single_instance']
+            document.getElementById("single_instance_score").innerHTML = accuracies['single_instance']
+            document.getElementById("single_instance_score").style.color = line_plot_colours[0]
+          }
+          if (keys.indexOf('inferred_label') > -1) {
+            accuracies['inferred_label'] = all_data[i]['accuracies']['inferred_label']
+            document.getElementById("inferred_score").innerHTML = accuracies['inferred_label']
+            document.getElementById("inferred_score").style.color = line_plot_colours[1]
+          }
+          if (keys.indexOf('data_augmentation') > -1) {
+            accuracies['data_augmentation'] = all_data[i]['accuracies']['data_augmentation']
+            document.getElementById("imageaugment_score").innerHTML = accuracies['data_augmentation']
+            document.getElementById("imageaugment_score").style.color = line_plot_colours[2]
+          }
+          if (keys.indexOf('confidence_augmentation') > -1) {
+            accuracies['confidence_augmentation'] = all_data[i]['accuracies']['confidence_augmentation']
+            document.getElementById("confaugment_score").innerHTML = accuracies['confidence_augmentation']
+            document.getElementById("confaugment_score").style.color = line_plot_colours[3]
+          }
+
+
+
+        }
+        
+      }
+    });
+  }
+
+</script>
+
+<body class="application">
+  <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="./"><i>Acti<b>VA</b>te</i> - <b>V</b>isual <b>A</b>nalytics in <i>Acti</i>ve Machine Learning</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row">
+
+      <!-- First column -->
+      <div class="col-sm-2">
+        
+
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="chart-wrapper">
+              <div class="chart-title">
+                <b>Sample Selection</b>
+              </div>
+              <div class="chart-stage">
+                <div id="chart-filter_view">
+                  <p><input id="query_size_input" style="width:200px" class="inputBox" type="number" placeholder="Amount" onchange="setQuerySize()" step="1" min="0" value="10"></p>
+                  <p><button class="button" style="width:200px" onclick="getSamples()">Get Samples</button></p>
+               <!--    <input type="radio" name="sample_selection_method" value="distance" onclick="sample_selection_method(value)" checked> Distance Selection<br>
+                  <input type="radio" name="sample_selection_method" value="random" onclick="sample_selection_method(value)"> Random Selection<br> -->
+                </div>
+              </div>
+              <div class="chart-notes">
+                <div id="sample_total-notes">
+
+                  <table style="width=100%; text-align: left;">
+                    <tr>
+                      <td>Total Samples</td>
+                      <td>User Labelled</td>
+                    </tr>
+                    <tr>
+                      <td><div id="sample_total-out" class="large_font" maxlength="0" value="0">0</div></td>
+                      <td><div id="user_label_count-out" class="large_font" maxlength="0" value="0">0</div></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="chart-wrapper">
+            <div class="chart-title">
+              <b>Classifier Training</b>
+            </div>
+            <div class="chart-stage">
+              <div id="train_model-view">
+
+                <p><button class="button" style="width:200px" onclick="train_model_using_all_methods()">Train Classifier</button></p>
+                <input type="checkbox" id="train_methods_single" value="single" onclick="method_select()" checked> Single-Instance Label<br>
+                <input type="checkbox" id="train_methods_inferred" value="inferred" onclick="method_select()" checked> Inferred Labels<br>
+                <input type="checkbox" id="train_methods_data_aug" value="data_aug" onclick="method_select()" checked> Image Data Augmentation<br>
+                <input type="checkbox" id="train_methods_conf_aug" value="conf_aug" onclick="method_select()" checked> Confidence-based Augmentation<br>
+              
+              </div>
+            </div>
+            <div class="chart-notes">
+              <div id="accuracy-notes">
+                <table style="width=100%; text-align: left;">
+                    <tr>
+                      <td>Step</td>
+                    </tr>
+                    <tr>
+                      <td><div id="step-out" class="large_font" maxlength="0" value="0" /></div></td>
+                    </tr>
+                  </table>
+
+                
+                
+                
+                <!-- Labelling accuracy:
+              <div id="label-out" class="large_font" maxlength="0" value="0" /></div>
+            -->
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="chart-wrapper">
+            <div class="chart-title">
+              <b>Configuration</b>
+            </div>
+            <div class="chart-stage">
+              <div id="chart-filter_view">
+                <b>Classifier</b><br />
+                <input type="radio" name="ML_Select" value="keraslogreg" onclick="ml_select(value)" checked> Logistic Regression (Keras)<br>
+                <input type="radio" name="ML_Select" value="kerasconvnet" onclick="ml_select(value)"> Convolutional Neural Network (Keras)<br>
+                <hr />
+            <!--    <b>Data Augmentation</b><br />
+                <input type="checkbox" id="Generator_Select" value="Generator_Select" onclick="generator_select(value)"> Use Sample Generator<br>
+                <input type="checkbox" id="Confidence_Select" value="Confidence_Select" onclick="confidence_select(value)"> Use Confidence<br>
+                <hr /> -->
+                <b>Sample selection</b><br />
+                <input type="radio" name="Distance_Select" value="random" onclick="distance_select(value)"> Random<br>
+                <input type="radio" name="Distance_Select" value="orig_dim" onclick="distance_select(value)"> High-dimensional<br>
+                <input type="radio" name="Distance_Select" value="reduce_dim" onclick="distance_select(value)" checked> Reduced-dimensional <br>
+                <input type="radio" name="Distance_Select" value="confidence" onclick="distance_select(value)"> Machine confidence<br>
+                <input type="radio" name="Distance_Select" value="confidence_distance" onclick="distance_select(value)"> Machine confidence-distance<br>
+                <hr />
+                <b>Dimensionality Reduction</b><br />
+                <input type="radio" name="Dim_Select" value="pca" onclick="dimension_select(value)"> PCA<br>
+                <input type="radio" name="Dim_Select" value="tsne" onclick="dimension_select(value)"> T-SNE<br>
+                <input type="radio" name="Dim_Select" value="pca_tsne" onclick="dimension_select(value)"> PCA T-SNE<br>
+                <input type="radio" name="Dim_Select" value="kmeans" onclick="dimension_select(value)"> kMeans<br>
+                <input type="radio" name="Dim_Select" value="umap" onclick="dimension_select(value)" checked> UMAP<br>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      
+    </div>
+  </div>
+  </div>
+  <!-- end First column -->
+
+  <!-- Second column -->
+  <div class="col-sm-7">
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="chart-wrapper">
+          <div class="chart-title">
+            <b>Classifier View</b>
+          </div>
+          <div class="chart-stage">
+            <div id="classifier_view">
+              <!-- <div id="textOut">
+                <div id="class-out" maxlength="0" value="0" size="10" />Classification:</div>
+            </div> -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <!-- end Second column -->
+
+  <!-- Third column -->
+  <div class="col-sm-3">
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="chart-wrapper">
+          <div class="chart-title">
+            <b>Sample Pool View</b>
+          </div>
+
+          <div class="chart-stage">
+            <div id="scatter_plot-view">
+              <svg id="scatter_plot_svg" class="scatter_plot"></svg>
+              <canvas id="scatter_plot_canvas" class="scatter_plot"></canvas>
+            </div>
+            <div id="scatter_plot-image_view" style="position:absolute; right:20px; top:20px">
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="chart-wrapper">
+          <div class="chart-title">
+            <b>Test Accuracy View</b>
+          </div>
+          <div class="chart-stage">
+            <div id="line_graph-view"></div>
+          </div>
+          <div class="chart-notes">
+
+            <table style="width=100%; text-align: left;">
+                    <tr>
+                      <td colspan="4">Classifier Accuracy</td>
+                    </tr>
+                    <tr>
+                      <td>Single-Instance Label</td>
+                      <td>Inferred Labels</td>
+                      <td>Image Data Augmentation</td>
+                      <td>Confidence-based Augmentation</td>
+                    </tr>
+                    <tr>
+                      <td><div id="single_instance_score" class="large_font" maxlength="0" value="0">0</div>%</td>
+                      <td><div id="inferred_score" class="large_font" maxlength="0" value="0">0</div>%</td>
+                      <td><div id="imageaugment_score" class="large_font" maxlength="0" value="0">0</div>%</td>
+                      <td><div id="confaugment_score" class="large_font" maxlength="0" value="0">0</div>%</td>
+                    </tr>
+                  </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- end Third column -->
+  </div>
+  </div>
+</body>
+
+<script>
+  prepareScatterPlot();
+  prepareLineGraph();
+  create_classifier_pane('#classifier_view');
+  setQuerySize();
+  setEpoch();
+  setBatchesIn();
+
+  get_data_to_populate_line_chart();
+
+</script>
+
+</html>
