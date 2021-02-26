@@ -1,0 +1,33 @@
+{
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "C/C++: cl.exe custom build",
+            "command": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.28.29333\\bin\\Hostx64\\x64\\cl.exe",
+            "args": [
+                "/EHsc",
+                "/MD",
+                "/DEBUG:FULL",
+                "/I",
+                "include",
+                "${file}",
+                "/link",
+                "/libpath:lib\\x64",
+                "tobii_interaction_lib.lib",
+                "tobii_stream_engine.lib"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "compiler: cl.exe"
+        }
+    ],
+    "version": "2.0.0"
+}
