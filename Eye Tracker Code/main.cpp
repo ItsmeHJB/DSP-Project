@@ -44,10 +44,9 @@ int main()
     // float height = rect.bottom - rect.top;
 
     // Set up window area
-
     const float windowWidth = 1920;
     const float windowHeight = 1080;
-    const float offset = 0.0f;
+    const float offset = 0.0f;  // Coords start in top left area
 
     intlib->CoordinateTransformAddOrUpdateDisplayArea(windowWidth, windowHeight);
     intlib->CoordinateTransformSetOriginOffset(offset, offset);
