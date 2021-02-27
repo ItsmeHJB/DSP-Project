@@ -7,57 +7,72 @@
 
 // c++ headers
 #include <iostream>
-#include <vector>
+#include <list>
 #include <algorithm>
+#include <string>
+#include <pair>
 
 // Custom headers
 #include <interaction_lib/InteractionLib.h>
 #include <interaction_lib/misc/InteractionLibPtr.h>
 
-// Structs
-// this struct is used to maintain a focus count
-struct Focus
-{
-    IL::InteractorId id    = IL::EmptyInteractorId();
-    size_t           count = 0;
-};
 
+// Structs and Classes
+
+// Stores gaze events
 class GazeEvent
 {
+  public:
     IL::InteractorId id;
-    IL::Timestamp start;
-    IL::Timestamp duration;
-    IL::Timestamp end;
-    IL::Timestamp interfixDur;
-    float horizontalPos;
-    float vertPos;
+    IL::Timestamp    time;
+    bool             gazeGained;
 
-    public:
-    void set_values (IL::InteractorId, IL::Timestamp, IL::Timestamp, IL::Timestamp, IL::Timestamp, float, float);
+    GazeEvent(const GazeEvent &g1) {id = g1.id; time = g1.time, gazeGained = g1.gazeGained; }
+
+    GazeEvent(IL::InteractorId id, IL::Timestamp time, bool hasFocus) {
+        this->id = id;
+        this->time = time;
+        this->gazeGained = hasFocus;
+    }
 };
 
-void GazeEvent::set_values (IL::InteractorId id, IL::Timestamp start, IL::Timestamp duration, IL::Timestamp end, IL::Timestamp interFixDur, float hori, float vert) {
-    this->id = id;
-    this->start = start;
-    this->duration = duration;
-    this->end = end;
-    this->interfixDur = interFixDur;
-    this->horizontalPos = hori;
-    this->vertPos = vert;
-}
 
 // Functions
-bool compFocusCount(Focus obj1, Focus obj2) { return obj1.count<obj2.count; }
 
-Focus FindMaxFoucses(std::vector<Focus> focusVec, const int count) {
-    return *std::max_element(std::begin(focusVec), std::end(focusVec), compFocusCount);
+// Inline convert bools to string
+inline const char * const BoolToString(bool b) {
+  return b ? "true" : "false";
 }
+
+// to_string functionality for GazeEvent class
+std::ostream& operator<<(std::ostream &strm, const GazeEvent &a) {
+    return strm << "GazeEvent(id: " << a.id << ", time: " << a.time << ", gazeGained: " << BoolToString(a.gazeGained) << ")";
+}
+
+// Class to print all data in GazeEvent list
+void DumpListData(std::list<GazeEvent> list) {
+    while (list.size() > 0)
+    {
+        GazeEvent ev = list.back();
+        std::cout << ev << std::endl;
+    }
+}
+
 
 // Main
 int main()
 {
+    
     // create the interaction library
     IL::UniqueInteractionLibPtr intlib(IL::CreateInteractionLib(IL::FieldOfUse::Interactive));
+    
+    // setup code vars
+    // set numnber of interactor rows and columns
+    // assuming they're all the same size
+    const int columns = 3;
+    const int rows = 2;
+    // setup min fixation time in microseconds
+    IL::Timestamp minFixLen = 100000;  // 0.1s
 
     // Cannot find window name ~ can't progress to using window based stuff
     // retreive window size of browser
@@ -75,15 +90,10 @@ int main()
     intlib->CoordinateTransformAddOrUpdateDisplayArea(windowWidth, windowHeight);
     intlib->CoordinateTransformSetOriginOffset(offset, offset);
 
-    // set numnber of interactor rows and columns
-    // assuming they're all the same size
-    const int columns = 3;
-    const int rows = 2;
+    
     const int count = columns * rows;
     const float boxWidth = windowWidth / columns;
     const float boxHeight = windowHeight / rows;
-
-    std::vector<Focus> focusVec;
 
     // Begin setup of interactors
     intlib->BeginInteractorUpdates();
@@ -107,10 +117,6 @@ int main()
         
         // Add them to the interactor system
         intlib->AddOrUpdateInteractor(id, rect, z);
-
-        Focus focus;
-        focus.id = id;
-        focusVec.push_back(focus);
     }
 
     // Commit changes
@@ -122,39 +128,72 @@ int main()
     Next bit is confidence results
     */
 
+    std::list<GazeEvent> gazeVec;
+
     // subscribe to gaze focus events
     // print event data to std out when called and count the number of consecutive focus events
     intlib->SubscribeGazeFocusEvents([](IL::GazeFocusEvent evt, void* context)
     {
-        std::vector<Focus>& focusVec = *static_cast<std::vector<Focus>*>(context);
-        std::cout
-            << "Interactor: " << evt.id
-            << ", focused: " << std::boolalpha << evt.hasFocus
-            << ", timestamp: " << evt.timestamp_us << " us"
-            << "\n";
+        std::list<GazeEvent>& gazeVec = *static_cast<std::list<GazeEvent>*>(context);
+        // std::cout
+        //     << "Interactor: " << evt.id
+        //     << ", focused: " << std::boolalpha << evt.hasFocus
+        //     << ", timestamp: " << evt.timestamp_us << " us"
+        //     << "\n";
 
-        if (evt.hasFocus)
-        {
-            ++focusVec[evt.id].count;
-        }
-    }, &focusVec);
+        GazeEvent gaze = GazeEvent(evt.id, evt.timestamp_us, evt.hasFocus);
+
+        gazeVec.push_back(gaze);
+
+    }, &gazeVec);
 
     // setup and maintain device connection, wait for device data between events and
     // update interaction library to trigger all callbacks
-    // stop after 3 consecutive focus events on the same interactor
     std::cout << "Starting interaction library update loop.\n";
+    constexpr size_t max_focus_count = 5;
 
-    constexpr size_t max_focus_count = 3;
-
-    while (FindMaxFoucses(focusVec, count).count < max_focus_count)
+    IL::Timestamp lastFixTime = 0;
+    while (gazeVec.size() < max_focus_count)
     {
         intlib->WaitAndUpdate();
     }
 
-    for (size_t i = 0; i < count; i++)
+    // Seperate out gaze events and write to file
+    while (gazeVec.size() > 0)
     {
-        std::cout << "Interactor " << focusVec[i].id << " got focused " << focusVec[i].count << " times\n";
-    }
+        GazeEvent gazeStart = gazeVec.front();
+        gazeVec.pop_front();
 
+        GazeEvent gazeEnd = gazeVec.front();
+        gazeVec.pop_front();
+
+        // std::cout
+        //     << "Interactor: " << gazeStart.id
+        //     << ", focused: " << std::boolalpha << gazeStart.gazeGained
+        //     << ", timestamp: " << gazeStart.time << " us"
+        //     << "\n";
+
+        //image name, area of interest on file, fixation start, length and end, gap between fixations, horizontal and vert pos, pupil diam, area of interest
+
+        // Check that the start and end are on the same ID and we are entering and leaving the area
+        if (!(gazeStart.gazeGained == true && gazeEnd.gazeGained == false && gazeStart.id == gazeEnd.id))
+        {
+            std::cout << "We have a problem in collecting data\n";
+            gazeVec.push_front(gazeEnd);
+            gazeVec.push_front(gazeStart);
+            DumpListData(gazeVec);
+            return(-1);
+        }
+
+        IL::Timestamp duration = gazeEnd.time - gazeStart.time;
+        if (duration > minFixLen)
+        {
+            IL::Timestamp interFixTime = gazeStart.time - lastFixTime;
+            lastFixTime = gazeEnd.time;
+
+        }
+    }
+    
     system("pause");
+    return(0);
 }
