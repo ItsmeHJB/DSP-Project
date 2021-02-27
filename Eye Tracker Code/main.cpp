@@ -10,7 +10,7 @@
 #include <list>
 #include <algorithm>
 #include <string>
-#include <pair>
+#include <utility>
 
 // Custom headers
 #include <interaction_lib/InteractionLib.h>
@@ -55,9 +55,31 @@ void DumpListData(std::list<GazeEvent> list) {
     {
         GazeEvent ev = list.back();
         std::cout << ev << std::endl;
+
+        list.pop_back();
     }
 }
 
+// Calculate coordinates of centre of box depending on id
+std::pair<float, float>& GetCoordsFromId(int id, int columns, int rows, float width, float height) {
+    int colCount = 0;
+    int rowCount = 0;
+    std::pair<float, float> coords;
+
+    for (size_t i = 0; i < id; i++)
+    {
+        ++colCount;
+        if (colCount == columns)
+        {
+            ++rowCount;
+            colCount = 0;
+        }
+    }
+
+    coords.first = colCount*width;
+    coords.second = rowCount*height;
+    return coords;
+}
 
 // Main
 int main()
@@ -150,7 +172,7 @@ int main()
     // setup and maintain device connection, wait for device data between events and
     // update interaction library to trigger all callbacks
     std::cout << "Starting interaction library update loop.\n";
-    constexpr size_t max_focus_count = 5;
+    constexpr size_t max_focus_count = 10;
 
     IL::Timestamp lastFixTime = 0;
     while (gazeVec.size() < max_focus_count)
@@ -190,7 +212,9 @@ int main()
         {
             IL::Timestamp interFixTime = gazeStart.time - lastFixTime;
             lastFixTime = gazeEnd.time;
+            std::pair<float, float> coords = GetCoordsFromId(gazeStart.id, columns, rows, boxWidth, boxHeight);
 
+            std::cout << gazeStart.id << ", " << gazeStart.time << ", " << duration << ", " << gazeEnd.time << ", " << interFixTime << ", " << coords.first << ", " << coords.second << std::endl;
         }
     }
     
