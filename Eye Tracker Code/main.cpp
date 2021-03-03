@@ -183,8 +183,6 @@ int main()
     // Seperate out gaze events and write to file
     while (gazeVec.size() > 0)
     {
-        DumpListData(gazeVec);
-
         GazeEvent gazeStart = gazeVec.front();
         gazeVec.pop_front();
 
@@ -199,6 +197,12 @@ int main()
 
         //image name, area of interest on file, fixation start, length and end, gap between fixations, horizontal and vert pos, pupil diam, area of interest
 
+        if (gazeVec.size() == 1)
+        {
+            break;
+        }
+        
+
         // Check that the start and end are on the same ID and we are entering and leaving the area
         if (!(gazeStart.gazeGained == true && gazeEnd.gazeGained == false && gazeStart.id == gazeEnd.id))
         {
@@ -207,13 +211,10 @@ int main()
             std::cout << gazeEnd << std::endl;
             gazeVec.push_front(gazeStart);
             // DumpListData(gazeVec);
-
-            continue;
         }
-
-        IL::Timestamp duration = gazeEnd.time - gazeStart.time;
-        if (duration > minFixLen)
+        else if ((gazeEnd.time - gazeStart.time) > minFixLen)
         {
+            IL::Timestamp duration = gazeEnd.time - gazeStart.time;
             IL::Timestamp interFixTime = gazeStart.time - lastFixTime;
             lastFixTime = gazeEnd.time;
             std::pair<float, float> coords = GetCoordsFromId(gazeStart.id, columns, rows, boxWidth, boxHeight);
