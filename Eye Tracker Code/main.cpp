@@ -55,13 +55,13 @@ void DumpListData(std::list<GazeEvent> list) {
     {
         GazeEvent ev = list.back();
         std::cout << ev << std::endl;
-
+        // std::cout << list.size() << std::endl;
         list.pop_back();
     }
 }
 
 // Calculate coordinates of centre of box depending on id
-std::pair<float, float>& GetCoordsFromId(int id, int columns, int rows, float width, float height) {
+std::pair<float, float> GetCoordsFromId(int id, int columns, int rows, float width, float height) {
     int colCount = 0;
     int rowCount = 0;
     std::pair<float, float> coords;
@@ -111,7 +111,6 @@ int main()
 
     intlib->CoordinateTransformAddOrUpdateDisplayArea(windowWidth, windowHeight);
     intlib->CoordinateTransformSetOriginOffset(offset, offset);
-
     
     const int count = columns * rows;
     const float boxWidth = windowWidth / columns;
@@ -180,9 +179,12 @@ int main()
         intlib->WaitAndUpdate();
     }
 
+    // Get rid of the first entry as it begins incorrectly
     // Seperate out gaze events and write to file
     while (gazeVec.size() > 0)
     {
+        DumpListData(gazeVec);
+
         GazeEvent gazeStart = gazeVec.front();
         gazeVec.pop_front();
 
@@ -201,10 +203,12 @@ int main()
         if (!(gazeStart.gazeGained == true && gazeEnd.gazeGained == false && gazeStart.id == gazeEnd.id))
         {
             std::cout << "We have a problem in collecting data\n";
-            gazeVec.push_front(gazeEnd);
+            std::cout << gazeStart << std::endl;
+            std::cout << gazeEnd << std::endl;
             gazeVec.push_front(gazeStart);
-            DumpListData(gazeVec);
-            return(-1);
+            // DumpListData(gazeVec);
+
+            continue;
         }
 
         IL::Timestamp duration = gazeEnd.time - gazeStart.time;
