@@ -11,6 +11,8 @@
 #include <algorithm>
 #include <string>
 #include <utility>
+#include <fstream>
+#include <vector>
 
 // Custom headers
 #include <interaction_lib/InteractionLib.h>
@@ -33,6 +35,54 @@ class GazeEvent
         this->id = id;
         this->time = time;
         this->gazeGained = hasFocus;
+    }
+};
+
+// Stores fixation events
+class Fixation
+{
+  public:
+    std::string AOIName;
+    float       startTime;
+    float       duration;
+    float       stopTime;
+    float       interFixDur;
+    float       horzPos;
+    float       vertPos;
+    int         XDAT;
+    int         AOI;
+
+    Fixation(const Fixation &f1) {
+        AOIName = f1.AOIName;
+        startTime = f1.startTime;
+        duration = f1.duration;
+        stopTime = f1.stopTime;
+        interFixDur = f1.interFixDur;
+        horzPos = f1.horzPos;
+        vertPos = f1.vertPos;
+        XDAT = f1.XDAT;
+        AOI = f1.AOI;
+    }
+
+    Fixation(std::string AOIName, 
+            float        startTime, 
+            float        duration, 
+            float        stopTime, 
+            float        interFixDur, 
+            float        horzPos,
+            float        vertPos,
+            int          XDAT,
+            int          AOI) 
+    {
+        this->AOIName = AOIName;
+        this->startTime = startTime;
+        this->duration = duration;
+        this->stopTime = stopTime;
+        this->interFixDur = interFixDur;
+        this->horzPos = horzPos;
+        this->vertPos = vertPos;
+        this->XDAT = XDAT;
+        this->AOI = AOI;
     }
 };
 
@@ -84,7 +134,6 @@ std::pair<float, float> GetCoordsFromId(int id, int columns, int rows, float wid
 // Main
 int main()
 {
-    
     // create the interaction library
     IL::UniqueInteractionLibPtr intlib(IL::CreateInteractionLib(IL::FieldOfUse::Interactive));
     
@@ -95,6 +144,8 @@ int main()
     const int rows = 2;
     // setup min fixation time in microseconds
     IL::Timestamp minFixLen = 100000;  // 0.1s
+    // Convert IL::Timestamp to seconds (us -> s)
+    float conversion = 1000000;
 
     // Cannot find window name ~ can't progress to using window based stuff
     // retreive window size of browser
@@ -179,6 +230,8 @@ int main()
         intlib->WaitAndUpdate();
     }
 
+    std::list<Fixation> fixations;
+
     // Get rid of the first entry as it begins incorrectly
     // Seperate out gaze events and write to file
     while (gazeVec.size() > 0)
@@ -201,7 +254,6 @@ int main()
         {
             break;
         }
-        
 
         // Check that the start and end are on the same ID and we are entering and leaving the area
         if (!(gazeStart.gazeGained == true && gazeEnd.gazeGained == false && gazeStart.id == gazeEnd.id))
@@ -214,15 +266,41 @@ int main()
         }
         else if ((gazeEnd.time - gazeStart.time) > minFixLen)
         {
-            IL::Timestamp duration = gazeEnd.time - gazeStart.time;
-            IL::Timestamp interFixTime = gazeStart.time - lastFixTime;
-            lastFixTime = gazeEnd.time;
+            float duration = (gazeEnd.time - gazeStart.time) / conversion;
+            float interFixTime = (gazeStart.time - lastFixTime) / conversion;
+            lastFixTime = gazeEnd.time / conversion;
             std::pair<float, float> coords = GetCoordsFromId(gazeStart.id, columns, rows, boxWidth, boxHeight);
 
-            std::cout << gazeStart.id << ", " << gazeStart.time << ", " << duration << ", " << gazeEnd.time << ", " << interFixTime << ", " << coords.first << ", " << coords.second << std::endl;
+            std::string AOINameStart = "Stim";
+            Fixation fix = Fixation(AOINameStart + std::to_string(gazeStart.id), gazeStart.time/conversion, 
+                                    duration, gazeEnd.time/conversion, interFixTime, 
+                                    coords.first, coords.second, 
+                                    130, gazeStart.id);
+            
+            fixations.push_back(fix);
+            // std::cout << gazeStart.id << ", " << gazeStart.time << ", " << duration << ", " << gazeEnd.time << ", " << interFixTime << ", " << coords.first << ", " << coords.second << std::endl;
         }
     }
-    
+
+    // file pointer 
+    std::fstream fout; 
+  
+    // opens an existing csv file or creates a new file, add titles
+    fout.open("..\\Gazemap gen\\Student_data.csv", std::ios::out);
+    fout<<"File"<<","<<"AOIName"<<","<<"StartTime"<<","<<"Duration"<<","<<"StopTime"<<","<<"InterfixDur"<<","<<"HorzPos"<<","<<"VertPos"<<","<<"XDAT"<<","<<"AOI"<<"\n";
+
+    for (size_t i = 0; i < fixations.size(); i++)
+    {
+        Fixation temp = fixations.front();
+        fixations.pop_front();
+        fout << "test_file" << ", " << temp.AOIName << ", "
+        << temp.startTime << ", " << temp.duration << ", "
+        << temp.stopTime << ", " << temp.interFixDur << ", "
+        << temp.horzPos << ", " << temp.vertPos << ", "
+        << temp.XDAT << ", " << temp.AOI << std::endl;
+    }
+    fout.close();
+
     system("pause");
     return(0);
 }
