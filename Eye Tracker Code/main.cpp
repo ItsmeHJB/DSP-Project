@@ -73,7 +73,7 @@ class Fixation
             float        vertPos,
             int          XDAT,
             int          AOI) 
-    {
+    {   
         this->AOIName = AOIName;
         this->startTime = startTime;
         this->duration = duration;
@@ -143,7 +143,7 @@ int main()
     const int columns = 3;
     const int rows = 2;
     // setup min fixation time in microseconds
-    IL::Timestamp minFixLen = 100000;  // 0.1s
+    IL::Timestamp minFixLen = 0.1;  // 0.1s
     // Convert IL::Timestamp to seconds (us -> s)
     float conversion = 1000000;
 
@@ -207,11 +207,6 @@ int main()
     intlib->SubscribeGazeFocusEvents([](IL::GazeFocusEvent evt, void* context)
     {
         std::list<GazeEvent>& gazeVec = *static_cast<std::list<GazeEvent>*>(context);
-        // std::cout
-        //     << "Interactor: " << evt.id
-        //     << ", focused: " << std::boolalpha << evt.hasFocus
-        //     << ", timestamp: " << evt.timestamp_us << " us"
-        //     << "\n";
 
         GazeEvent gaze = GazeEvent(evt.id, evt.timestamp_us, evt.hasFocus);
 
@@ -255,6 +250,9 @@ int main()
             break;
         }
 
+        std::cout << "start = " << BoolToString(gazeStart.gazeGained) << ", end = " << BoolToString(gazeEnd.gazeGained) << ", ids(" << gazeStart.id<<","<<gazeEnd.id << ")\n";
+        float duration = (gazeEnd.time - gazeStart.time) / conversion;
+
         // Check that the start and end are on the same ID and we are entering and leaving the area
         if (!(gazeStart.gazeGained == true && gazeEnd.gazeGained == false && gazeStart.id == gazeEnd.id))
         {
@@ -264,21 +262,24 @@ int main()
             gazeVec.push_front(gazeStart);
             // DumpListData(gazeVec);
         }
-        else if ((gazeEnd.time - gazeStart.time) > minFixLen)
+
+        else if (duration > minFixLen)
         {
-            float duration = (gazeEnd.time - gazeStart.time) / conversion;
             float interFixTime = (gazeStart.time - lastFixTime) / conversion;
             lastFixTime = gazeEnd.time / conversion;
             std::pair<float, float> coords = GetCoordsFromId(gazeStart.id, columns, rows, boxWidth, boxHeight);
+            float start = gazeStart.time/conversion;
+            float end = gazeEnd.time/conversion;
+            std::cout << gazeStart.time << std::endl;
+            std::cout << start << std::endl;
 
             std::string AOINameStart = "Stim";
-            Fixation fix = Fixation(AOINameStart + std::to_string(gazeStart.id), gazeStart.time/conversion, 
-                                    duration, gazeEnd.time/conversion, interFixTime, 
+            Fixation fix = Fixation(AOINameStart + std::to_string(gazeStart.id), start, 
+                                    duration, end, interFixTime, 
                                     coords.first, coords.second, 
                                     130, gazeStart.id);
             
             fixations.push_back(fix);
-            // std::cout << gazeStart.id << ", " << gazeStart.time << ", " << duration << ", " << gazeEnd.time << ", " << interFixTime << ", " << coords.first << ", " << coords.second << std::endl;
         }
     }
 
@@ -289,15 +290,15 @@ int main()
     fout.open("..\\Gazemap gen\\Student_data.csv", std::ios::out);
     fout<<"File"<<","<<"AOIName"<<","<<"StartTime"<<","<<"Duration"<<","<<"StopTime"<<","<<"InterfixDur"<<","<<"HorzPos"<<","<<"VertPos"<<","<<"XDAT"<<","<<"AOI"<<"\n";
 
-    for (size_t i = 0; i < fixations.size(); i++)
+    while (fixations.size() > 0)
     {
         Fixation temp = fixations.front();
         fixations.pop_front();
         fout << "test_file" << ", " << temp.AOIName << ", "
-        << temp.startTime << ", " << temp.duration << ", "
-        << temp.stopTime << ", " << temp.interFixDur << ", "
-        << temp.horzPos << ", " << temp.vertPos << ", "
-        << temp.XDAT << ", " << temp.AOI << std::endl;
+            << temp.startTime << ", " << temp.duration << ", "
+            << temp.stopTime << ", " << temp.interFixDur << ", "
+            << temp.horzPos << ", " << temp.vertPos << ", "
+            << temp.XDAT << ", " << temp.AOI << "\n";
     }
     fout.close();
 
