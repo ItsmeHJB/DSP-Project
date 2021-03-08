@@ -126,8 +126,9 @@ std::pair<float, float> GetCoordsFromId(int id, int columns, int rows, float wid
         }
     }
 
-    coords.first = colCount*width;
-    coords.second = rowCount*height;
+    // Gets centre of box
+    coords.first = (colCount*width) + (width * 0.5);
+    coords.second = (rowCount*height) + (height * 0.5);
     return coords;
 }
 
@@ -140,8 +141,8 @@ int main()
     // setup code vars
     // set numnber of interactor rows and columns
     // assuming they're all the same size
-    const int columns = 3;
-    const int rows = 2;
+    const int columns = 10;
+    const int rows = 5;
     // setup min fixation time in microseconds
     IL::Timestamp minFixLen = 0.1;  // 0.1s
     // Convert IL::Timestamp to seconds (us -> s)
@@ -217,7 +218,7 @@ int main()
     // setup and maintain device connection, wait for device data between events and
     // update interaction library to trigger all callbacks
     std::cout << "Starting interaction library update loop.\n";
-    constexpr size_t max_focus_count = 10;
+    constexpr size_t max_focus_count = 100;
 
     IL::Timestamp lastFixTime = 0;
     while (gazeVec.size() < max_focus_count)
@@ -250,7 +251,7 @@ int main()
             break;
         }
 
-        std::cout << "start = " << BoolToString(gazeStart.gazeGained) << ", end = " << BoolToString(gazeEnd.gazeGained) << ", ids(" << gazeStart.id<<","<<gazeEnd.id << ")\n";
+        //std::cout << "start = " << BoolToString(gazeStart.gazeGained) << ", end = " << BoolToString(gazeEnd.gazeGained) << ", ids(" << gazeStart.id<<","<<gazeEnd.id << ")\n";
         float duration = (gazeEnd.time - gazeStart.time) / conversion;
 
         // Check that the start and end are on the same ID and we are entering and leaving the area
@@ -270,8 +271,6 @@ int main()
             std::pair<float, float> coords = GetCoordsFromId(gazeStart.id, columns, rows, boxWidth, boxHeight);
             float start = gazeStart.time/conversion;
             float end = gazeEnd.time/conversion;
-            std::cout << gazeStart.time << std::endl;
-            std::cout << start << std::endl;
 
             std::string AOINameStart = "Stim";
             Fixation fix = Fixation(AOINameStart + std::to_string(gazeStart.id), start, 
@@ -299,6 +298,11 @@ int main()
             << temp.stopTime << ", " << temp.interFixDur << ", "
             << temp.horzPos << ", " << temp.vertPos << ", "
             << temp.XDAT << ", " << temp.AOI << "\n";
+        // std::cout << "test_file" << ", " << temp.AOIName << ", "
+        //     << temp.startTime << ", " << temp.duration << ", "
+        //     << temp.stopTime << ", " << temp.interFixDur << ", "
+        //     << temp.horzPos << ", " << temp.vertPos << ", "
+        //     << temp.XDAT << ", " << temp.AOI << "\n";
     }
     fout.close();
 
