@@ -226,6 +226,10 @@ int main()
         intlib->WaitAndUpdate();
     }
 
+    // Setup start time
+    GazeEvent gazeTemp = gazeVec.front();
+    lastFixTime = gazeTemp.time;
+
     std::list<Fixation> fixations;
 
     // Get rid of the first entry as it begins incorrectly
@@ -267,7 +271,7 @@ int main()
         else if (duration > minFixLen)
         {
             float interFixTime = (gazeStart.time - lastFixTime) / conversion;
-            lastFixTime = gazeEnd.time / conversion;
+            lastFixTime = gazeEnd.time;
             std::pair<float, float> coords = GetCoordsFromId(gazeStart.id, columns, rows, boxWidth, boxHeight);
             float start = gazeStart.time/conversion;
             float end = gazeEnd.time/conversion;
@@ -298,11 +302,6 @@ int main()
             << temp.stopTime << ", " << temp.interFixDur << ", "
             << temp.horzPos << ", " << temp.vertPos << ", "
             << temp.XDAT << ", " << temp.AOI << "\n";
-        // std::cout << "test_file" << ", " << temp.AOIName << ", "
-        //     << temp.startTime << ", " << temp.duration << ", "
-        //     << temp.stopTime << ", " << temp.interFixDur << ", "
-        //     << temp.horzPos << ", " << temp.vertPos << ", "
-        //     << temp.XDAT << ", " << temp.AOI << "\n";
     }
     fout.close();
 

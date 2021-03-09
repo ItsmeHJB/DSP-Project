@@ -10,7 +10,8 @@ from matplotlib.collections import PatchCollection
 # %matplotlib inline
 
 # Read in eye data
-fix_data = pd.read_csv('SampleData/EyeData.csv')
+# fix_data = pd.read_csv('SampleData/EyeData.csv')
+fix_data = pd.read_csv('Student_data.csv')
 print(fix_data.head())
 
 # Read in confidence data
@@ -27,7 +28,7 @@ print(correct_responses.head())
 '''
 plot for 1 trial so we see what it looks like
 '''
-user_id = '01_WASI_DG'
+user_id = 'test_file'
 xdat = 130
 
 x = fix_data.HorzPos[(fix_data.File == user_id) & (fix_data.XDAT == xdat)].values
@@ -47,7 +48,8 @@ lines = []
 # set a different marker based on what the user is looking at
 markers = []
 for i in range(len(aoi)):
-    if (aoi[i] == correct_op) and ('Op' in aoi_name[i]):
+    # if (aoi[i] == correct_op) and ('Op' in aoi_name[i]):
+    if 'Op' in aoi_name[i]:
         markers.append('*')
     elif 'Op' in aoi_name[i]:
         markers.append('o')
