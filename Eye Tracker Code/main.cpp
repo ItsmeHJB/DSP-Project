@@ -5,6 +5,9 @@
 // #include <windef.h>
 // #include <winuser.h>
 
+// c headers
+// #include <Python.h>
+
 // c++ headers
 #include <iostream>
 #include <list>
@@ -133,7 +136,7 @@ std::pair<float, float> GetCoordsFromId(int id, int columns, int rows, float wid
 }
 
 // Main
-int main()
+int main(int argc, char **argv)
 {
     // create the interaction library
     IL::UniqueInteractionLibPtr intlib(IL::CreateInteractionLib(IL::FieldOfUse::Interactive));
@@ -219,6 +222,9 @@ int main()
     // update interaction library to trigger all callbacks
     std::cout << "Starting interaction library update loop.\n";
     constexpr size_t max_focus_count = 100;
+
+    // TODO: HAVING ISSUES RUNNING PYTHON FROM INBUILT INTERPRETER
+    // system("python ..\\Activate\\activate_app.py");
 
     IL::Timestamp lastFixTime = 0;
     while (gazeVec.size() < max_focus_count)
