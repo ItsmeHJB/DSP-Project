@@ -26,6 +26,7 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.utils import np_utils
 from activate_config import Options
 from PIL import Image
+import subprocess
 
 oo = Options()
 
@@ -1912,7 +1913,8 @@ def index():
     oo.results_file = "./results/" + oo.results_file + ".csv"
     with open(oo.results_file, 'w') as the_file:
         the_file.write('samples,single,inferred,imageaugment,confaugment,userlabels\n')
-    # return render_template("v4.html")
+    # tracker_exe = '..\\Eye Tracker Code\\main.exe'
+    # proc = subprocess.Popen([tracker_exe])
     return render_template("v5.html")
 
 
