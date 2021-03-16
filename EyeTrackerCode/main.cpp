@@ -311,6 +311,5 @@ int main(int argc, char **argv)
     }
     fout.close();
 
-    system("pause");
     return(0);
 }
