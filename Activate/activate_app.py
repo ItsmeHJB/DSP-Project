@@ -2,31 +2,24 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import argparse
 import datetime
-import gzip
 import json
-import keras
-# import matplotlib.pyplot as plt
-import numpy as np
-import scipy as sp
-import pandas as pd
 import os
 import random as rand
-import re
 import sys
-import tensorflow as tf
-
-from flask import Flask, render_template, request
 from importlib import reload
-from keras import backend as K
+from time import time
+
+import keras
+import numpy as np
+import scipy as sp
+from PIL import Image
+from flask import Flask, render_template, request
 from keras.layers import Dense, Activation, Dropout, Flatten, Conv2D, MaxPooling2D
 from keras.models import Sequential, model_from_json
 from keras.preprocessing.image import ImageDataGenerator
-from keras.utils import np_utils
+
 from activate_config import Options
-from PIL import Image
-import subprocess
 
 oo = Options()
 
@@ -35,12 +28,11 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Disable TF warnings when run.
 sys.setrecursionlimit(2000)
 
 # datagen = ImageDataGenerator(
-
-# rotation_range=22.5,
-# width_shift_range=0.2,
-# height_shift_range=0.2,
-# shear_range=0.2,
-# zoom_range=[-0.2, +0.2])
+#     rotation_range=22.5,
+#     width_shift_range=0.2,
+#     height_shift_range=0.2,
+#     shear_range=0.2,
+#     zoom_range=[-0.2, +0.2])
 
 datagen = ImageDataGenerator(
     # rotation_range=5,
@@ -49,9 +41,6 @@ datagen = ImageDataGenerator(
 
 
 def select_starting_point(pcad, use_random=False):
-    index = -1
-    do_not_use_random = True
-
     if use_random:
         index = int(np.random.random() * oo.pca_distances.shape[0])
     else:
@@ -121,11 +110,9 @@ def select_point(ps, pcad, index):
     return ps, pcad, this_index
 
 
-#### THIS AND NEXT FUNCTION ARE TO SUPPORT MEASURING DISTANCE BASED ON FULL DATASET RATHER
-#### THAN JUST 2 DIMENSIONAL PCA
+# THIS AND NEXT FUNCTION ARE TO SUPPORT MEASURING DISTANCE BASED ON FULL DATASET RATHER
+# THAN JUST 2 DIMENSIONAL PCA
 def select_starting_point_for_full_image(pcad, use_random=False):
-    index = -1
-
     if use_random:
         index = int(np.random.random() * oo.normal_distances.shape[0])
     else:
@@ -179,7 +166,7 @@ def getDistanceTrainBatch(size):
 
     sample_ref = []
     counter = 0
-    while (counter < size):
+    while counter < size:
         if oo.batch_total == 0 and counter == 0:
             if oo.use_dimensional_reduction_mode:
                 oo.point_select, oo.pca_distances_working_copy, this_index = select_starting_point(
@@ -218,7 +205,7 @@ def getDistanceTrainBatch(size):
 def getRandomTrainBatch(size):
     sample_ref = []
     counter = 0
-    while (counter < size):
+    while counter < size:
         if oo.batch_total == 0 and counter == 0:
             if oo.use_dimensional_reduction_mode:
                 oo.point_select, oo.pca_distances_working_copy, this_index = select_starting_point(
@@ -262,7 +249,7 @@ def getConfidenceRandomTrainBatch(size, method_of_conf_select='least_confidence'
 
     if oo.batch_total == 0:
         counter = 0
-        while (counter < size):
+        while counter < size:
             if counter == 0:
                 oo.point_select, oo.pca_distances_working_copy, this_index = select_starting_point(
                     oo.pca_distances_working_copy, use_random=True)
@@ -279,7 +266,7 @@ def getConfidenceRandomTrainBatch(size, method_of_conf_select='least_confidence'
         temp_point_select = oo.point_select
         temp_pca_distances_working_copy = oo.pca_distances_working_copy
         counter = 0
-        while (counter < size * random_size):
+        while counter < size * random_size:
             temp_point_select, temp_pca_distances_working_copy, this_index = select_point_based_on_random(
                 temp_point_select, temp_pca_distances_working_copy)
             sample = 'CIFAR10_image_(' + str(int(this_index)) + ').jpg'
@@ -293,7 +280,6 @@ def getConfidenceRandomTrainBatch(size, method_of_conf_select='least_confidence'
             node_data = keras_current_convnet_model_prediction(sample_ref_temp)
 
         conf_values = []
-        image_values = []
         nd = []
 
         if method_of_conf_select == 'least_confidence':
@@ -368,7 +354,7 @@ def getConfidenceDistanceTrainBatch(size, method_of_conf_select='least_confidenc
     distance_size = 10  # size
     if oo.batch_total == 0:
         counter = 0
-        while (counter < size):
+        while counter < size:
             if counter == 0:
                 oo.point_select, oo.pca_distances_working_copy, this_index = select_starting_point(
                     oo.pca_distances_working_copy, use_random=True)
@@ -385,7 +371,7 @@ def getConfidenceDistanceTrainBatch(size, method_of_conf_select='least_confidenc
         temp_point_select = oo.point_select
         temp_pca_distances_working_copy = oo.pca_distances_working_copy
         counter = 0
-        while (counter < size * distance_size):
+        while counter < size * distance_size:
             temp_point_select, temp_pca_distances_working_copy, this_index = select_point_based_on_distance(
                 temp_point_select, temp_pca_distances_working_copy)
             sample = 'CIFAR10_image_(' + str(int(this_index)) + ').jpg'
@@ -401,10 +387,9 @@ def getConfidenceDistanceTrainBatch(size, method_of_conf_select='least_confidenc
         elif oo.use_convnet == 'kerasconvnet':
             node_data = keras_current_convnet_model_prediction(sample_ref_temp)
         conf_values = []
-        image_values = []
 
-        ####  THIS IS THE KEY BIT THAT WILL DIFFER FOR THE CONFIDENCE METHODS -
-        ## DO WE TAKE THE LEAST-CONFIDENT, THE CASES WHERE THE MARGINAL CONF IS SMALLEST, OR WHERE THE ENTROPY OF CONFS IS HIGH?
+        #  THIS IS THE KEY BIT THAT WILL DIFFER FOR THE CONFIDENCE METHODS -
+        # DO WE TAKE THE LEAST-CONFIDENT, THE CASES WHERE THE MARGINAL CONF IS SMALLEST, OR WHERE THE ENTROPY OF CONFS IS HIGH?
 
         nd = []
 
@@ -610,7 +595,7 @@ def computeTsneAndPcaDistances():
 
 def checkIfTrainChosen(sample):  # Seems to return None insted of alt sample?
 
-    if (len(oo.total_train_sample_ref)) != (oo.total_train_pool):
+    if (len(oo.total_train_sample_ref)) != oo.total_train_pool:
         if sample in oo.total_train_sample_ref:
             alt_sample = rand.choice(os.listdir(oo.directory_for_train_images))
             return checkIfTestChosen(alt_sample)
@@ -626,7 +611,7 @@ def oneHotEncoder(label):
     temp_train[label] = 1
     temp_train = temp_train.reshape([1, oo.number_of_classes])
     print("temp_train:", temp_train)
-    if (len(oo.train_labels) > 0):
+    if len(oo.train_labels) > 0:
         oo.train_labels = np.vstack([oo.train_labels, temp_train])
     else:
         oo.train_labels = temp_train
@@ -649,7 +634,7 @@ def keras_current_model_prediction(sample_batch):
         # Create an array with pixel values from image opened
         sample_vector = np.array(img).ravel() / 255
         # Appends to train_images
-        if (len(oo.temp_test) > 0):
+        if len(oo.temp_test) > 0:
             oo.temp_test = np.vstack([oo.temp_test, sample_vector])
         else:
             oo.temp_test = sample_vector.reshape([1, sample_vector.shape[0]])
@@ -666,19 +651,15 @@ def keras_current_model_prediction(sample_batch):
         prediction_result = model.predict((oo.temp_test[i, :]).reshape(1, 784))
         # print (prediction_result)
 
-        data_entry = {}
-
-        data_entry['id'] = int(sample_batch[i].split(")")[0].split("(")[1])
-        data_entry['label'] = int(np.argmax(prediction_result))
-        data_entry['image'] = sample_batch[i]
-        data_entry['confidence'] = float(np.max(prediction_result[0]))
-        data_entry['predictions'] = prediction_result[0].tolist()
+        data_entry = {'id': int(sample_batch[i].split(")")[0].split("(")[1]),
+                      'label': int(np.argmax(prediction_result)), 'image': sample_batch[i],
+                      'confidence': float(np.max(prediction_result[0])), 'predictions': prediction_result[0].tolist()}
 
         node_data.append(data_entry)
         # oo.id_key.append(data_entry['id'])
         # oneHotEncoder( data_entry['label'] )
 
-    return (node_data)
+    return node_data
 
 
 def keras_current_convnet_model_prediction(sample_batch):
@@ -696,7 +677,7 @@ def keras_current_convnet_model_prediction(sample_batch):
         # Create an array with pixel values from image opened
         sample_vector = np.array(img).ravel() / 255
         # Appends to train_images
-        if (len(oo.temp_test) > 0):
+        if len(oo.temp_test) > 0:
             oo.temp_test = np.vstack([oo.temp_test, sample_vector])
         else:
             oo.temp_test = sample_vector.reshape([1, sample_vector.shape[0]])
@@ -718,19 +699,16 @@ def keras_current_convnet_model_prediction(sample_batch):
 
         prediction_result = model.predict((oo.temp_test[i, :]).reshape(1, 28, 28, 1))
         print(prediction_result)
-        data_entry = {}
+        data_entry = {'id': int(sample_batch[i].split(")")[0].split("(")[1]),
+                      'label': int(np.argmax(prediction_result)), 'image': sample_batch[i],
+                      'confidence': float(np.max(prediction_result[0])), 'predictions': prediction_result[0].tolist()}
 
-        data_entry['id'] = int(sample_batch[i].split(")")[0].split("(")[1])
-        data_entry['label'] = int(np.argmax(prediction_result))
-        data_entry['image'] = sample_batch[i]
-        data_entry['confidence'] = float(np.max(prediction_result[0]))
-        data_entry['predictions'] = prediction_result[0].tolist()
         node_data.append(data_entry)
 
         # oo.id_key.append(data_entry['id'])
         # oneHotEncoder( data_entry['label'] )
 
-    return (node_data)
+    return node_data
 
 
 def appendConfidence(confidence_score):
@@ -763,10 +741,9 @@ def xTrainEncoderConfidence(image_ref, labels):
     sample_vector = np.array(sample_vector).reshape(-1, 28, 28, 1)
 
     print("Lets generate new samples based on confidence")
-    counter = 0
     for X_gen, Y_gen in datagen.flow(sample_vector, labels, batch_size=1):
         sample_vector = X_gen.reshape([1, -1])
-        if (len(oo.train_images) > 0):
+        if len(oo.train_images) > 0:
             oo.train_images = np.vstack([oo.train_images, sample_vector])
         else:
             oo.train_images = sample_vector
@@ -810,18 +787,15 @@ def generate_confusion_matrix(pred, actual):
     d = np.zeros([10, 10])
     print("Generate confusion matrix: ", len(pred))
     for i in range(len(pred)):
-        row = actual[i];  #
-        col = pred[i];  #
+        row = actual[i]
+        col = pred[i]
 
         print(row, col)
         d[row, col] = d[row, col] + 1  # + (1 / 10000)
     oo.conf_matrix = []
     for y in range(d.shape[0]):
         for x in range(d.shape[1]):
-            entry = {}
-            entry['x'] = x
-            entry['y'] = y
-            entry['value'] = d[y, x]
+            entry = {'x': x, 'y': y, 'value': d[y, x]}
             oo.conf_matrix.append(entry)
 
     print(oo.conf_matrix)
@@ -833,24 +807,14 @@ def get_conf_matrix():
         oo.conf_matrix = []
         for y in range(10):
             for x in range(10):
-                entry = {}
-                entry['x'] = x
-                entry['y'] = y
-                entry['value'] = 0
+                entry = {'x': x, 'y': y, 'value': 0}
                 oo.conf_matrix.append(entry)
 
     return json.dumps(oo.conf_matrix)
 
 
 def keras_logreg(state, train_images, train_labels, file_set):
-    iep = int(oo.epochs)
-    ibi = int(oo.batches_in)
-    ibs = int(oo.batch_size)
-    its = int(oo.test_size)
-
-    batch_size = ibs
     nb_classes = 10
-    nb_epoch = iep
     input_dim = 784
 
     def build_logistic_model(input_dim, output_dim):
@@ -882,9 +846,9 @@ def keras_logreg(state, train_images, train_labels, file_set):
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
 
-    history = model.fit(train_images, train_labels,
-                        batch_size=batch_size, epochs=nb_epoch,
-                        verbose=1, validation_data=(test_images, test_labels))
+    # history = model.fit(train_images, train_labels,
+    #                     batch_size=batch_size, epochs=nb_epoch,
+    #                     verbose=1, validation_data=(test_images, test_labels))
 
     score = model.evaluate(test_images, test_labels, verbose=1)
 
@@ -904,7 +868,7 @@ def keras_logreg(state, train_images, train_labels, file_set):
         predict_vals.append(np.argmax(predict[0]))
     generate_confusion_matrix(predict_vals, actual_vals)
 
-    #### Simple way to get the output layer of network, and the predicted label
+    # Simple way to get the output layer of network, and the predicted label
     print("Actual -- Label:", np.argmax(test_labels[0]), "Values:", test_labels[0])
     predict = model.predict(test_images[0].reshape(1, 784))
     print("Predict -- Label:", np.argmax(predict[0]), "Values:", predict, "Confidence:", np.max(predict[0]))
@@ -919,14 +883,7 @@ def keras_logreg(state, train_images, train_labels, file_set):
 
 
 def keras_logreg_predicted_labels(state, input_data, output_labels, file_set):
-    iep = int(oo.epochs)
-    ibi = int(oo.batches_in)
-    ibs = int(oo.batch_size)
-    its = int(oo.test_size)
-
-    batch_size = ibs
     nb_classes = 10
-    nb_epoch = iep
     input_dim = 784
 
     def build_logistic_model(input_dim, output_dim):
@@ -939,8 +896,8 @@ def keras_logreg_predicted_labels(state, input_data, output_labels, file_set):
     print("input_data", input_data.shape)
     print("output_labels", output_labels.shape)
 
-    test_images = (oo.test_images).reshape(-1, input_dim)
-    test_labels = (oo.test_labels).reshape(-1, nb_classes)
+    test_images = oo.test_images.reshape(-1, input_dim)
+    test_labels = oo.test_labels.reshape(-1, nb_classes)
 
     print("test_images", test_images.shape)
     print("test_labels", test_labels.shape)
@@ -958,9 +915,9 @@ def keras_logreg_predicted_labels(state, input_data, output_labels, file_set):
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
 
-    history = model.fit(input_data, output_labels,
-                        batch_size=batch_size, epochs=nb_epoch,
-                        verbose=1, validation_data=(test_images, test_labels))
+    # history = model.fit(input_data, output_labels,
+    #                     batch_size=batch_size, epochs=nb_epoch,
+    #                     verbose=1, validation_data=(test_images, test_labels))
 
     score = model.evaluate(test_images, test_labels, verbose=1)
 
@@ -971,7 +928,7 @@ def keras_logreg_predicted_labels(state, input_data, output_labels, file_set):
     # outputs = [layer.output for layer in model.layers]
     # print (outputs)
 
-    #### Simple way to get the output layer of network, and the predicted label
+    # Simple way to get the output layer of network, and the predicted label
     print("Actual -- Label:", np.argmax(test_labels[0]), "Values:", test_labels[0])
     predict = model.predict(test_images[0].reshape(1, 784))
     print("Predict -- Label:", np.argmax(predict[0]), "Values:", predict, "Confidence:", np.max(predict[0]))
@@ -985,14 +942,7 @@ def keras_logreg_predicted_labels(state, input_data, output_labels, file_set):
 
 
 def keras_convnet(state, train_images, train_labels, file_set):
-    iep = int(oo.epochs)
-    ibi = int(oo.batches_in)
-    ibs = int(oo.batch_size)
-    its = int(oo.test_size)
-
-    batch_size = ibs
     nb_classes = oo.number_of_classes
-    nb_epoch = iep
 
     def build_convnet_model(input_dim, output_dim):
         model = Sequential()
@@ -1016,8 +966,8 @@ def keras_convnet(state, train_images, train_labels, file_set):
     print("train_images", train_images.shape)
     print("train_labels", train_labels.shape)
 
-    test_images = (oo.test_images).reshape((oo.test_images).shape[0], img_rows, img_cols, 1)
-    test_labels = (oo.test_labels).reshape(-1, nb_classes)
+    test_images = oo.test_images.reshape(oo.test_images.shape[0], img_rows, img_cols, 1)
+    test_labels = oo.test_labels.reshape(-1, nb_classes)
 
     print("test_images", test_images.shape)
     print("test_labels", test_labels.shape)
@@ -1035,9 +985,9 @@ def keras_convnet(state, train_images, train_labels, file_set):
                   optimizer=keras.optimizers.Adadelta(),
                   metrics=['accuracy'])
 
-    history = model.fit(train_images, train_labels,
-                        batch_size=batch_size, epochs=nb_epoch,
-                        verbose=1, validation_data=(test_images, test_labels))
+    # history = model.fit(train_images, train_labels,
+    #                     batch_size=batch_size, epochs=nb_epoch,
+    #                     verbose=1, validation_data=(test_images, test_labels))
 
     score = model.evaluate(test_images, test_labels, verbose=1)
 
@@ -1054,7 +1004,7 @@ def keras_convnet(state, train_images, train_labels, file_set):
         predict_vals.append(np.argmax(predict[0]))
     generate_confusion_matrix(predict_vals, actual_vals)
 
-    #### Simple way to get the output layer of network, and the predicted label
+    # Simple way to get the output layer of network, and the predicted label
     print("Actual -- Label:", np.argmax(test_labels[0]), "Values:", test_labels[0])
     predict = model.predict(test_images[0].reshape(-1, img_rows, img_cols, 1))
     print("Predict -- Label:", np.argmax(predict[0]), "Values:", predict, "Confidence:", np.max(predict[0]))
@@ -1068,14 +1018,7 @@ def keras_convnet(state, train_images, train_labels, file_set):
 
 
 def keras_convnet_predicted_labels(state, input_data, output_labels, file_set):
-    iep = int(oo.epochs)
-    ibi = int(oo.batches_in)
-    ibs = int(oo.batch_size)
-    its = int(oo.test_size)
-
-    batch_size = ibs
     nb_classes = oo.number_of_classes
-    nb_epoch = iep
 
     def build_convnet_model(input_dim, output_dim):
         model = Sequential()
@@ -1102,8 +1045,8 @@ def keras_convnet_predicted_labels(state, input_data, output_labels, file_set):
     print("train_images", train_images.shape)
     print("train_labels", train_labels.shape)
 
-    test_images = (oo.test_images).reshape((oo.test_images).shape[0], img_rows, img_cols, 1)
-    test_labels = (oo.test_labels).reshape(-1, nb_classes)
+    test_images = oo.test_images.reshape(oo.test_images.shape[0], img_rows, img_cols, 1)
+    test_labels = oo.test_labels.reshape(-1, nb_classes)
 
     print("test_images", test_images.shape)
     print("test_labels", test_labels.shape)
@@ -1121,9 +1064,9 @@ def keras_convnet_predicted_labels(state, input_data, output_labels, file_set):
                   optimizer=keras.optimizers.Adadelta(),
                   metrics=['accuracy'])
 
-    history = model.fit(train_images, train_labels,
-                        batch_size=batch_size, epochs=nb_epoch,
-                        verbose=1, validation_data=(test_images, test_labels))
+    # history = model.fit(train_images, train_labels,
+    #                     batch_size=batch_size, epochs=nb_epoch,
+    #                     verbose=1, validation_data=(test_images, test_labels))
 
     score = model.evaluate(test_images, test_labels, verbose=1)
 
@@ -1134,7 +1077,7 @@ def keras_convnet_predicted_labels(state, input_data, output_labels, file_set):
     # outputs = [layer.output for layer in model.layers]
     # print (outputs)
 
-    #### Simple way to get the output layer of network, and the predicted label
+    # Simple way to get the output layer of network, and the predicted label
     print("Actual -- Label:", np.argmax(test_labels[0]), "Values:", test_labels[0])
     predict = model.predict(test_images[0].reshape(-1, img_rows, img_cols, 1))
     print("Predict -- Label:", np.argmax(predict[0]), "Values:", predict, "Confidence:", np.max(predict[0]))
@@ -1172,8 +1115,7 @@ def predict_pool_labels():
                 min_j = set_of_known_points[j, 5]
         oo.pca_distances[i, 4] = min_j
 
-    output = {}
-    output['some_data'] = oo.pca_distances[:, 4].tolist()
+    output = {'some_data': oo.pca_distances[:, 4].tolist()}
     return json.dumps(output)
 
 
@@ -1198,9 +1140,8 @@ def set_batches_in():
 
 @app.route("/get_oo.batch_total")
 def get_batch_total():
-    output = {}
-    output['oo.batch_total'] = oo.batch_total
-    return (json.dumps(output))
+    output = {'oo.batch_total': oo.batch_total}
+    return json.dumps(output)
 
 
 @app.route("/get_samples")
@@ -1233,14 +1174,13 @@ def get_samples():
     print("Number of objects in list:", len(object_list))
     print("Length of oo.all_selected_filenames: ", len(oo.all_selected_filenames))
     print("Unique length of oo.all_selected_filenames: ", len(list(set(oo.all_selected_filenames))))
-    return (json.dumps(object_list))
+    return json.dumps(object_list)
 
 
 @app.route("/get_train_step_log")
 def get_train_step_log():
-    output = {}
-    output['train_step_log'] = oo.train_step_log
-    return (json.dumps(output))
+    output = {'train_step_log': oo.train_step_log}
+    return json.dumps(output)
 
 
 @app.route('/update_label')
@@ -1253,13 +1193,10 @@ def update_label():
     node_image = str(request.args.get('image'))
 
     print("node_image:", node_image)
-    xpos = float(request.args.get('xpos'))
-    ypos = float(request.args.get('ypos'))
     user_confidence = float(request.args.get('user_confidence'))
-    user_labelled = str(request.args.get('user_labelled'))
 
     new_label = int(request.args.get('new_label'))
-    if (new_label == -1):
+    if new_label == -1:
         new_label = "?"
 
     # batch_labels = np.array([[]]).astype(int)
@@ -1283,23 +1220,20 @@ def update_label():
         print(file_id)
         print(oo.pca_distances[file_id, :])
 
-        if node_id in oo.id_key:
-            index = oo.id_key.index(node_id)
-            # print ("Remove entry from train_images matrix")
-            # removeData(index)
+        # if node_id in oo.id_key:
+        # index = oo.id_key.index(node_id)
 
         output['total_samples'] = str(oo.train_images.shape[0])
         return json.dumps(output)
 
-    ### COMMENTED OUT FOR THE MOMENT - THIS DEALS WITH WHEN AN EXISTING INSTANCE
-    ### IS RELABELLED - HOWEVER LET'S JUST ASSUME FOR NOW WE POSITION INSTANCE ONLY ONCE
+    #  COMMENTED OUT FOR THE MOMENT - THIS DEALS WITH WHEN AN EXISTING INSTANCE
+    # IS RELABELLED - HOWEVER LET'S JUST ASSUME FOR NOW WE POSITION INSTANCE ONLY ONCE
 
     # overwriteData(node_image, new_label, index)
 
     elif new_label != "?":
         if node_id in oo.id_key:
             print("node_id in oo.id_key - likely that just been classed by machine???")
-            index = oo.id_key.index(node_id)
         else:
             oo.id_key.append(node_id)
             # if oo.use_confidence:
@@ -1319,17 +1253,18 @@ def update_label():
             oo.pca_distances[file_id, 6] = user_confidence
             print("file_id:", file_id)
             print("oo.pca_distances[file_id,:]", oo.pca_distances[file_id, :])
+            curr_time = time()
 
             print("==>image id {}, label {}, confidence {} ".format(file_id, int(new_label), user_confidence))
             # create confidence file with header row if it does not already exist
             # output confidence details to file
-            if (os.path.isfile('confidences.txt') == False):
+            if not os.path.isfile('confidences.txt'):
                 with open('confidences.txt', 'w') as thefile:
-                    print('ImageId,Label,Confidence', file=thefile)
-                    print("{}, {}, {} ".format(file_id, int(new_label), user_confidence), file=thefile)
+                    print('ImageId,Label,Confidence,time', file=thefile)
+                    print("{}, {}, {}, {} ".format(file_id, int(new_label), user_confidence, curr_time), file=thefile)
             else:
                 with open('confidences.txt', 'a') as thefile:
-                    print("{}, {}, {} ".format(file_id, int(new_label), user_confidence), file=thefile)
+                    print("{}, {}, {}, {} ".format(file_id, int(new_label), user_confidence, curr_time), file=thefile)
 
         output['total_samples'] = str(oo.train_images.shape[0])
         return json.dumps(output)
@@ -1345,11 +1280,10 @@ def add_image_to_labelling_pool():
     output = {}
 
     sample = 'CIFAR10_image_(' + str(int(my_index)) + ').jpg'
-    sample_ref = []
-    sample_ref.append(sample)
+    sample_ref = [sample]
 
-    ### one thing currently missing - if user selects from sample pool and classifier exists
-    ### then should we return the predicted label and position with this?
+    # one thing currently missing - if user selects from sample pool and classifier exists
+    # then should we return the predicted label and position with this?
     if oo.train_step_log > 0:
         if oo.use_convnet == 'keraslogreg':
             node_data = keras_current_model_prediction(sample_ref)
@@ -1383,18 +1317,13 @@ def get_image_from_scatter_position():
 
 @app.route("/prepare_bar_data")
 def prepare_bar_data():
-    output = {}
-    output['batchsize'] = int(oo.batch_size)
-    output['testsize'] = int(oo.test_size)
-    output['poolsize'] = int(oo.total_pool_size)
+    output = {'batchsize': int(oo.batch_size), 'testsize': int(oo.test_size), 'poolsize': int(oo.total_pool_size)}
     return json.dumps(output)
 
 
 @app.route("/prepare_line_graph_data")
 def prepare_line_graph_data():
-    output = {}
-    output['samples'] = int(oo.batch_total)
-    output['accuracy'] = oo.current_accuracy
+    output = {'samples': int(oo.batch_total), 'accuracy': oo.current_accuracy}
     return json.dumps(output)
 
 
@@ -1424,28 +1353,28 @@ def train_model_using_all_methods():
     da = 0
     ca = 0
 
-    if (oo.perform_single_instance):
+    if oo.perform_single_instance:
         oo.use_sample_generator = 'none'
         first = train_model_using_user_labels()
         output['single_instance'] = json.loads(first)
         sample_size = output['single_instance']['samples']
         si = output['single_instance']['accuracy']
 
-    if (oo.perform_inferred_label):
+    if oo.perform_inferred_label:
         predict_pool_labels()
         second = train_model_using_predicted_labels()
         output['inferred_label'] = json.loads(second)
         sample_size = output['inferred_label']['samples']
         il = output['inferred_label']['accuracy']
 
-    if (oo.perform_data_augmentation):
+    if oo.perform_data_augmentation:
         oo.use_sample_generator = 'standard'
         third = train_model_using_user_labels()
         output['data_augmentation'] = json.loads(third)
         sample_size = output['data_augmentation']['samples']
         da = output['data_augmentation']['accuracy']
 
-    if (oo.perform_confidence_augmentation):
+    if oo.perform_confidence_augmentation:
         oo.use_sample_generator = 'confidence'
         fourth = train_model_using_user_labels()
         output['confidence_augmentation'] = json.loads(fourth)
@@ -1659,9 +1588,7 @@ def train_model_using_predicted_labels():
 
     # Output accuracy of current model
     # Cast output to int so truncated and JSON serialisable
-    output = {}
-    output['samples'] = int(X.shape[0])
-    output['accuracy'] = int(accuracy * 100)
+    output = {'samples': int(X.shape[0]), 'accuracy': int(accuracy * 100)}
     return json.dumps(output)
 
 
@@ -1833,7 +1760,7 @@ def set_line_chart_file():
 def get_data_to_populate_line_chart():
     filename = './results/' + oo.file_name_for_line_chart_to_display + '.csv'
     file_data = np.loadtxt(filename, skiprows=1, delimiter=',')
-    ### now let's send this to the line chart
+    # now let's send this to the line chart
     data_in_correct_format = []
 
     if file_data.shape[1] == 5:
@@ -1843,9 +1770,7 @@ def get_data_to_populate_line_chart():
             inferred = file_data[i, 2]
             augment = file_data[i, 3]
             conf = file_data[i, 4]
-            entry = {}
-            entry['samples'] = samples
-            entry['accuracies'] = {}
+            entry = {'samples': samples, 'accuracies': {}}
             entry['accuracies']['single_instance'] = single
             entry['accuracies']['inferred_label'] = inferred
             entry['accuracies']['data_augmentation'] = augment
@@ -1861,9 +1786,7 @@ def get_data_to_populate_line_chart():
             augment = file_data[i, 3]
             conf = file_data[i, 4]
             user_labels = file_data[i, 5]
-            entry = {}
-            entry['samples'] = samples
-            entry['accuracies'] = {}
+            entry = {'samples': samples, 'accuracies': {}}
             entry['accuracies']['single_instance'] = single
             entry['accuracies']['inferred_label'] = inferred
             entry['accuracies']['data_augmentation'] = augment
@@ -1913,8 +1836,6 @@ def index():
     oo.results_file = "./results/" + oo.results_file + ".csv"
     with open(oo.results_file, 'w') as the_file:
         the_file.write('samples,single,inferred,imageaugment,confaugment,userlabels\n')
-    # tracker_exe = '..\\Eye Tracker Code\\main.exe'
-    # proc = subprocess.Popen([tracker_exe])
     return render_template("v5.html")
 
 
