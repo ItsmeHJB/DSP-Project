@@ -15,12 +15,12 @@ fix_data = pd.read_csv('Student_data.csv')
 print(fix_data.head())
 
 # Read in confidence data
-# summary_data = pd.read_csv('DataTidy/SummaryData5ClassAdjustedOutliersNormalized.csv')
-# summary_data.tail()
+summary_data = pd.read_csv('../Activate/confidences.txt')
+print(summary_data.tail())
 
 # Read in correct label data
-correct_responses = pd.read_csv('SampleData/CorrectResponses.csv')
-print(correct_responses.head())
+# correct_responses = pd.read_csv('SampleData/CorrectResponses.csv')
+# print(correct_responses.head())
 
 # Print area names
 # print(fix_data.AOIName.unique())

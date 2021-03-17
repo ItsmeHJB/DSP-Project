@@ -1248,6 +1248,7 @@ def update_label():
 
             print("-- Update to user provided labels ---")
             # actual label: oo.pca_distances[file_id, 3]
+            act_label = str(oo.pca_distances[file_id, 3])
             # oo.pca_distances[file_id, 4] prediction by system
             oo.pca_distances[file_id, 5] = int(new_label)
             oo.pca_distances[file_id, 6] = user_confidence
@@ -1260,11 +1261,11 @@ def update_label():
             # output confidence details to file
             if not os.path.isfile('confidences.txt'):
                 with open('confidences.txt', 'w') as thefile:
-                    print('ImageId,Label,Confidence,time', file=thefile)
-                    print("{}, {}, {}, {} ".format(file_id, int(new_label), user_confidence, curr_time), file=thefile)
+                    print('ImageId,Label,Confidence,time,ActLabel', file=thefile)
+                    print("{}, {}, {}, {}, {} ".format(file_id, int(new_label), user_confidence, curr_time, act_label), file=thefile)
             else:
                 with open('confidences.txt', 'a') as thefile:
-                    print("{}, {}, {}, {} ".format(file_id, int(new_label), user_confidence, curr_time), file=thefile)
+                    print("{}, {}, {}, {}, {} ".format(file_id, int(new_label), user_confidence, curr_time, act_label), file=thefile)
 
         output['total_samples'] = str(oo.train_images.shape[0])
         return json.dumps(output)

@@ -223,9 +223,7 @@ int main(int argc, char **argv)
     std::cout << "Starting interaction library update loop.\n";
     constexpr size_t max_focus_count = 100;
 
-    // TODO: HAVING ISSUES RUNNING PYTHON FROM INBUILT INTERPRETER
-    // system("python ..\\Activate\\activate_app.py");
-
+    // TODO: Collect data based on time frame
     IL::Timestamp lastFixTime = 0;
     while (gazeVec.size() < max_focus_count)
     {

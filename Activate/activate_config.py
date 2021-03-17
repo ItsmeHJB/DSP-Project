@@ -134,8 +134,8 @@ class Options:
     test_labels = np.array(temp)
 
     if running_on_osx:
-        directory_for_test_images = "static/images/cifar10_noclass/test"
-        directory_for_train_images = "static/images/cifar10_noclass/train"
+        directory_for_test_images = "static/images/cifar10_keras/test"
+        directory_for_train_images = "static/images/cifar10_keras/train"
         directory_for_trained_model = "logs/trained_logreg_model.ckpt"
 
         tsne_file = "./distance_data/tsne_distances.csv"
@@ -146,8 +146,8 @@ class Options:
     else:
         # directory_for_test_images = "static\\images\\cifar10\\test"
         # directory_for_train_images = "static\\images\\cifar10\\train"
-        directory_for_test_images = "static\\images\\cifar10_noclass\\test"
-        directory_for_train_images = "static\\images\\cifar10_noclass\\train"
+        directory_for_test_images = "static\\images\\cifar10_keras\\test"
+        directory_for_train_images = "static\\images\\cifar10_keras\\train"
         directory_for_trained_model = "logs\\trained_logreg_model.ckpt"
 
         tsne_file = "distance_data\\tsne_distances.csv"
