@@ -16,6 +16,7 @@
 #include <utility>
 #include <fstream>
 #include <vector>
+#include <chrono>
 
 // Custom headers
 #include <interaction_lib/InteractionLib.h>
@@ -52,7 +53,6 @@ class Fixation
     float       interFixDur;
     float       horzPos;
     float       vertPos;
-    int         XDAT;
     int         AOI;
 
     Fixation(const Fixation &f1) {
@@ -63,7 +63,6 @@ class Fixation
         interFixDur = f1.interFixDur;
         horzPos = f1.horzPos;
         vertPos = f1.vertPos;
-        XDAT = f1.XDAT;
         AOI = f1.AOI;
     }
 
@@ -74,7 +73,6 @@ class Fixation
             float        interFixDur, 
             float        horzPos,
             float        vertPos,
-            int          XDAT,
             int          AOI) 
     {   
         this->AOIName = AOIName;
@@ -84,7 +82,6 @@ class Fixation
         this->interFixDur = interFixDur;
         this->horzPos = horzPos;
         this->vertPos = vertPos;
-        this->XDAT = XDAT;
         this->AOI = AOI;
     }
 };
@@ -144,12 +141,14 @@ int main(int argc, char **argv)
     // setup code vars
     // set numnber of interactor rows and columns
     // assuming they're all the same size
-    const int columns = 10;
-    const int rows = 5;
+    const int columns = 16;
+    const int rows = 9;
     // setup min fixation time in microseconds
     IL::Timestamp minFixLen = 0.1;  // 0.1s
     // Convert IL::Timestamp to seconds (us -> s)
     float conversion = 1000000;
+    // Length of time measurement takes place for in seconds
+    constexpr time_t measure_length = 10;
 
     // Cannot find window name ~ can't progress to using window based stuff
     // retreive window size of browser
@@ -218,17 +217,30 @@ int main(int argc, char **argv)
 
     }, &gazeVec);
 
+    // Store start time in file to be used later
+    std::chrono::milliseconds::rep milliseconds_since_epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    // file pointer 
+    std::fstream fout; 
+    // opens an existing csv file or creates a new file, add time
+    fout.open("..\\GazemapGen\\GazeStart.txt", std::ios::out);
+    fout << milliseconds_since_epoch << "\n";
+    fout.close();
+
+    // Get start time for running
+    time_t start;
+    start = time (NULL);
+
     // setup and maintain device connection, wait for device data between events and
     // update interaction library to trigger all callbacks
     std::cout << "Starting interaction library update loop.\n";
-    constexpr size_t max_focus_count = 100;
-
-    // TODO: Collect data based on time frame
     IL::Timestamp lastFixTime = 0;
-    while (gazeVec.size() < max_focus_count)
+
+    while (time (NULL) < start + measure_length)
     {
         intlib->WaitAndUpdate();
     }
+
+    std::cout << "Finished monitoring" << std::endl;
 
     // Setup start time
     GazeEvent gazeTemp = gazeVec.front();
@@ -284,18 +296,15 @@ int main(int argc, char **argv)
             Fixation fix = Fixation(AOINameStart + std::to_string(gazeStart.id), start, 
                                     duration, end, interFixTime, 
                                     coords.first, coords.second, 
-                                    130, gazeStart.id);
+                                    gazeStart.id);
             
             fixations.push_back(fix);
         }
     }
-
-    // file pointer 
-    std::fstream fout; 
   
     // opens an existing csv file or creates a new file, add titles
-    fout.open("..\\Gazemap gen\\Student_data.csv", std::ios::out);
-    fout<<"File"<<","<<"AOIName"<<","<<"StartTime"<<","<<"Duration"<<","<<"StopTime"<<","<<"InterfixDur"<<","<<"HorzPos"<<","<<"VertPos"<<","<<"XDAT"<<","<<"AOI"<<"\n";
+    fout.open("..\\GazemapGen\\Student_data.csv", std::ios::out);
+    fout<<"File"<<","<<"AOIName"<<","<<"StartTime"<<","<<"Duration"<<","<<"StopTime"<<","<<"InterfixDur"<<","<<"HorzPos"<<","<<"VertPos"<<","<<"AOI"<<"\n";
 
     while (fixations.size() > 0)
     {
@@ -305,7 +314,7 @@ int main(int argc, char **argv)
             << temp.startTime << ", " << temp.duration << ", "
             << temp.stopTime << ", " << temp.interFixDur << ", "
             << temp.horzPos << ", " << temp.vertPos << ", "
-            << temp.XDAT << ", " << temp.AOI << "\n";
+            << ", " << temp.AOI << "\n";
     }
     fout.close();
 

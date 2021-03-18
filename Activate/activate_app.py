@@ -1261,11 +1261,11 @@ def update_label():
             # output confidence details to file
             if not os.path.isfile('confidences.txt'):
                 with open('confidences.txt', 'w') as thefile:
-                    print('ImageId,Label,Confidence,time,ActLabel', file=thefile)
-                    print("{}, {}, {}, {}, {} ".format(file_id, int(new_label), user_confidence, curr_time, act_label), file=thefile)
+                    print('ImageId,Label,Confidence,time,ActLabel,XDAT', file=thefile)
+                    print("{}, {}, {}, {}, {}, {} ".format(file_id, int(new_label), user_confidence, curr_time, act_label, "130"), file=thefile)
             else:
                 with open('confidences.txt', 'a') as thefile:
-                    print("{}, {}, {}, {}, {} ".format(file_id, int(new_label), user_confidence, curr_time, act_label), file=thefile)
+                    print("{}, {}, {}, {}, {}, {} ".format(file_id, int(new_label), user_confidence, curr_time, act_label, "130"), file=thefile)
 
         output['total_samples'] = str(oo.train_images.shape[0])
         return json.dumps(output)

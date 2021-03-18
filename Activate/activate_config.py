@@ -33,7 +33,7 @@ class Options:
     create_user_label_column = True
     create_user_confidence_column = True
     n_clusters = 10
-    sample_selection_method = 'distance'
+    sample_selection_method = 'random'
 
     results_file = ''
 
