@@ -17,7 +17,9 @@ print(fix_data.head())
 summary_data = pd.read_csv('../Activate/confidences.txt')
 print(summary_data.tail())
 
-start_data = pd.read_csv('')
+start_data = pd.read_csv('GazeStart.txt')
+start_time = start_data.time.values[0]
+print("Start time: " + str(start_time))
 
 '''
 plot for 1 trial so we see what it looks like
@@ -79,12 +81,28 @@ plot for 1 trial so we see what it looks like
 
 # Code to iterate through gazemap solutions
 
-for xdat in sorted(summary_data.XDAT):
+'''
+for each labelled image
+{
+if classification is after start and before end
+{
+get data and plot it?
+}
+}
+'''
+# TODO: WORK ON GETTING TIMING SORTED OUT
+for fixation in fix_data:
+
+
+for img in summary_data:
+
+
+
+for imgId in summary_data.ImageId:
     x = fix_data.HorzPos[(fix_data.XDAT == xdat)].values
     y = fix_data.VertPos[(fix_data.XDAT == xdat)].values
     duration = fix_data.Duration[(fix_data.XDAT == xdat)].values
     inter_fix = fix_data.InterfixDur[(fix_data.XDAT == xdat)].values
-    pupil = fix_data.PupilDiam[(fix_data.XDAT == xdat)].values
     aoi = fix_data.AOI[(fix_data.XDAT == xdat)].values
     aoi_name  = fix_data.AOIName[(fix_data.XDAT == xdat)].values
 

@@ -9,6 +9,7 @@ import random as rand
 import sys
 from importlib import reload
 from time import time
+import datetime
 
 import keras
 import numpy as np
@@ -38,6 +39,12 @@ datagen = ImageDataGenerator(
     # rotation_range=5,
     width_shift_range=0.1,
     height_shift_range=0.1)
+
+epoch = datetime.datetime.utcfromtimestamp(0)
+
+
+def unix_time_millis(dt):
+    return (dt - epoch).total_seconds() * 1000.0
 
 
 def select_starting_point(pcad, use_random=False):
@@ -1254,7 +1261,7 @@ def update_label():
             oo.pca_distances[file_id, 6] = user_confidence
             print("file_id:", file_id)
             print("oo.pca_distances[file_id,:]", oo.pca_distances[file_id, :])
-            curr_time = time()
+            curr_time = unix_time_millis(datetime.datetime.now())
 
             print("==>image id {}, label {}, confidence {} ".format(file_id, int(new_label), user_confidence))
             # create confidence file with header row if it does not already exist

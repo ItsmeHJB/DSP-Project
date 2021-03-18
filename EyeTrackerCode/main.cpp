@@ -219,12 +219,16 @@ int main(int argc, char **argv)
 
     // Store start time in file to be used later
     std::chrono::milliseconds::rep milliseconds_since_epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    std::cout << milliseconds_since_epoch << std::endl;
+    unsigned long milliseconds_since_epoch2 = std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1);
+    std::cout << milliseconds_since_epoch2 << std::endl;
     // file pointer 
     std::fstream fout; 
-    // opens an existing csv file or creates a new file, add time
-    fout.open("..\\GazemapGen\\GazeStart.txt", std::ios::out);
-    fout << milliseconds_since_epoch << "\n";
-    fout.close();
+    // // opens an existing csv file or creates a new file, add time
+    // fout.open("..\\GazemapGen\\GazeStart.txt", std::ios::out);
+    // fout << "time" << "\n" << milliseconds_since_epoch << "\n";
+    // fout.close();
+    system("pause");
 
     // Get start time for running
     time_t start;
@@ -314,7 +318,7 @@ int main(int argc, char **argv)
             << temp.startTime << ", " << temp.duration << ", "
             << temp.stopTime << ", " << temp.interFixDur << ", "
             << temp.horzPos << ", " << temp.vertPos << ", "
-            << ", " << temp.AOI << "\n";
+            << temp.AOI << "\n";
     }
     fout.close();
 
