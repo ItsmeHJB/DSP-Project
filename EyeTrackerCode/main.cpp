@@ -47,9 +47,9 @@ class Fixation
 {
   public:
     std::string AOIName;
-    float       startTime;
+    long long   startTime;
     float       duration;
-    float       stopTime;
+    long long   stopTime;
     float       interFixDur;
     float       horzPos;
     float       vertPos;
@@ -67,9 +67,9 @@ class Fixation
     }
 
     Fixation(std::string AOIName, 
-            float        startTime, 
+            long long    startTime, 
             float        duration, 
-            float        stopTime, 
+            long long    stopTime, 
             float        interFixDur, 
             float        horzPos,
             float        vertPos,
@@ -217,20 +217,10 @@ int main(int argc, char **argv)
 
     }, &gazeVec);
 
-    // Store start time in file to be used later
+    // Store start time in ms for use in calcs later
     std::chrono::milliseconds::rep milliseconds_since_epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    std::cout << milliseconds_since_epoch << std::endl;
-    unsigned long milliseconds_since_epoch2 = std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1);
-    std::cout << milliseconds_since_epoch2 << std::endl;
-    // file pointer 
-    std::fstream fout; 
-    // // opens an existing csv file or creates a new file, add time
-    // fout.open("..\\GazemapGen\\GazeStart.txt", std::ios::out);
-    // fout << "time" << "\n" << milliseconds_since_epoch << "\n";
-    // fout.close();
-    system("pause");
 
-    // Get start time for running
+    // Get start time for running in seconds
     time_t start;
     start = time (NULL);
 
@@ -249,6 +239,7 @@ int main(int argc, char **argv)
     // Setup start time
     GazeEvent gazeTemp = gazeVec.front();
     lastFixTime = gazeTemp.time;
+    IL::Timestamp startTime = gazeTemp.time;
 
     std::list<Fixation> fixations;
 
@@ -262,21 +253,12 @@ int main(int argc, char **argv)
         GazeEvent gazeEnd = gazeVec.front();
         gazeVec.pop_front();
 
-        // std::cout
-        //     << "Interactor: " << gazeStart.id
-        //     << ", focused: " << std::boolalpha << gazeStart.gazeGained
-        //     << ", timestamp: " << gazeStart.time << " us"
-        //     << "\n";
-
-        //image name, area of interest on file, fixation start, length and end, gap between fixations, horizontal and vert pos, pupil diam, area of interest
-
         if (gazeVec.size() == 1)
         {
             break;
         }
 
-        //std::cout << "start = " << BoolToString(gazeStart.gazeGained) << ", end = " << BoolToString(gazeEnd.gazeGained) << ", ids(" << gazeStart.id<<","<<gazeEnd.id << ")\n";
-        float duration = (gazeEnd.time - gazeStart.time) / conversion;
+        float duration = (gazeEnd.time - gazeStart.time) / conversion;  // Stored in s
 
         // Check that the start and end are on the same ID and we are entering and leaving the area
         if (!(gazeStart.gazeGained == true && gazeEnd.gazeGained == false && gazeStart.id == gazeEnd.id))
@@ -293,18 +275,24 @@ int main(int argc, char **argv)
             float interFixTime = (gazeStart.time - lastFixTime) / conversion;
             lastFixTime = gazeEnd.time;
             std::pair<float, float> coords = GetCoordsFromId(gazeStart.id, columns, rows, boxWidth, boxHeight);
-            float start = gazeStart.time/conversion;
-            float end = gazeEnd.time/conversion;
+
+            long long start = milliseconds_since_epoch + (gazeStart.time - startTime);  // Stored in ms
+            long long end = milliseconds_since_epoch + (gazeEnd.time - startTime);  // Stored in ms
 
             std::string AOINameStart = "Stim";
             Fixation fix = Fixation(AOINameStart + std::to_string(gazeStart.id), start, 
                                     duration, end, interFixTime, 
                                     coords.first, coords.second, 
                                     gazeStart.id);
-            
+                                    
             fixations.push_back(fix);
+
+            system("pause");
         }
     }
+
+    // file pointer 
+    std::fstream fout;
   
     // opens an existing csv file or creates a new file, add titles
     fout.open("..\\GazemapGen\\Student_data.csv", std::ios::out);

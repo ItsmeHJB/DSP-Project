@@ -1181,6 +1181,18 @@ def get_samples():
     print("Number of objects in list:", len(object_list))
     print("Length of oo.all_selected_filenames: ", len(oo.all_selected_filenames))
     print("Unique length of oo.all_selected_filenames: ", len(list(set(oo.all_selected_filenames))))
+    curr_time = unix_time_millis(datetime.datetime.now())
+    if not os.path.isfile('confidences.txt'):
+        with open('confidences.txt', 'w') as thefile:
+            print('ImageId,Label,Confidence,time,ActLabel,XDAT', file=thefile)
+            print(
+                "{}, {}, {}, {}, {}, {} ".format(0, 0, 0, curr_time, 0, 0),
+                file=thefile)
+    else:
+        with open('confidences.txt', 'a') as thefile:
+            print(
+                "{}, {}, {}, {}, {}, {} ".format(0, 0, 0, curr_time, 0, 0),
+                file=thefile)
     return json.dumps(object_list)
 
 

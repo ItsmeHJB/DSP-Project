@@ -11,15 +11,13 @@ from matplotlib.collections import PatchCollection
 
 # Read in eye data
 fix_data = pd.read_csv('Student_data.csv')
+print("Fixation data")
 print(fix_data.head())
 
 # Read in confidence data
 summary_data = pd.read_csv('../Activate/confidences.txt')
+print("Confidence data")
 print(summary_data.tail())
-
-start_data = pd.read_csv('GazeStart.txt')
-start_time = start_data.time.values[0]
-print("Start time: " + str(start_time))
 
 '''
 plot for 1 trial so we see what it looks like
@@ -90,31 +88,68 @@ get data and plot it?
 }
 }
 '''
-# TODO: WORK ON GETTING TIMING SORTED OUT
-for fixation in fix_data:
-
-
-for img in summary_data:
-
-
-
+lastLabelTime = None
+timerIndex = 0
+# For each image that was classified
 for imgId in summary_data.ImageId:
-    x = fix_data.HorzPos[(fix_data.XDAT == xdat)].values
-    y = fix_data.VertPos[(fix_data.XDAT == xdat)].values
-    duration = fix_data.Duration[(fix_data.XDAT == xdat)].values
-    inter_fix = fix_data.InterfixDur[(fix_data.XDAT == xdat)].values
-    aoi = fix_data.AOI[(fix_data.XDAT == xdat)].values
-    aoi_name  = fix_data.AOIName[(fix_data.XDAT == xdat)].values
+    currLabelTime = summary_data.time[(summary_data.ImageId == imgId)].values[0]
+    # Get start time on first run through
+    if not lastLabelTime:
+        lastLabelTime = currLabelTime
+        continue
 
-    correct_op = correct_responses.CorrectResponse[correct_responses.XDAT == xdat].values[0]
+    # Find index of first fixation event that happened after the last label event
+    startTime = fix_data.StartTime[timerIndex]
+    while lastLabelTime > startTime:
+        timerIndex += 1
 
-    sizes = (duration+0.1)*80
+    # Setup lists for lines
     mark_colors = []
     line_colors = []
     line_widths = []
     lines = []
-    #set a different marker based on what the user is looking at
+    # set a different marker based on what the user is looking at
     markers = []
+
+    # Find fixations after last timer and before label happened
+    # Iterate through fixations until they take place after the labelling event, add these to the gazemap
+    while currLabelTime < fix_data.StopTime[timerIndex]:
+        x = fix_data.HorzPos[timerIndex]
+        y = fix_data.VertPos[timerIndex]
+        duration = fix_data.Duration[timerIndex]
+        inter_fix = fix_data.InterfixDur[timerIndex]
+        aoi = fix_data.AOI[timerIndex]
+        aoi_name = fix_data.AOIName[timerIndex]
+        correct_op = summary_data.ActLabel[(summary_data.ImageId == imgId)].values[0]
+        sizes = (duration + 0.1) * 80
+
+        # Not working correctly atm
+        if (aoi == correct_op) and ('Op' in aoi_name):
+            markers.append('*')
+        elif 'Op' in aoi_name:
+            markers.append('o')
+        elif 'Stim' in aoi_name:
+            markers.append('s')  # This is always happening in current system
+        else:
+            markers.append('x')
+        line_widths.append((inter_fix + 0.1) * 6)
+        if i < len(aoi)-1:
+            lines.append([(x[i],y[i]),(x[i+1],y[i+1])])
+            if ('Op' in aoi_name[i]) and ('Stim' in aoi_name[i+1]):
+                line_colors.append('b')
+            elif ('Stim' in aoi_name[i]) and ('Op' in aoi_name[i+1]):
+                line_colors.append('c')
+            elif ('OUT' in aoi_name[i]) or ('OUT' in aoi_name[i+1]):
+                line_colors.append('k')
+            else:
+                line_colors.append('g')
+
+        input("wait")
+
+input("wait")
+
+
+for imgId in summary_data.ImageId:
     for i in range(len(aoi)):
         if (aoi[i] == correct_op) and ('Op' in aoi_name[i]):
             markers.append('*')
