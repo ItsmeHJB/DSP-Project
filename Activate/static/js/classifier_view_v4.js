@@ -132,7 +132,7 @@ function update_classifier_pane(images, batchsize) {
 
   nodeEnter.append("svg:image")
       .attr("xlink:href",  function(nodes) {
-          var src = "/static/images/cifar10_noclass/train/"
+          var src = "/static/images/cifar10_keras/train/"
         return (src + nodes.image);
       })
       .attr("id", function(d) {return "image_" + d.scatter_id})
@@ -382,7 +382,7 @@ function update_classifier_pane_with_single_instance(images, batchsize, batch_to
 
   nodeEnter.append("svg:image")
       .attr("xlink:href",  function(nodes) {
-          var src = "/static/images/cifar10_noclass/train/"
+          var src = "/static/images/cifar10_keras/train/"
         return (src + nodes.image);
       })
       .attr("id", function(d) {return "image_" + d.scatter_id})
@@ -650,7 +650,7 @@ function update_classifier_pane_predict(node_data, batchsize) {
 
   nodeEnter.append("svg:image")
       .attr("xlink:href",  function(nodes) {
-          var src = "/static/images/cifar10_noclass/train/"
+          var src = "/static/images/cifar10_keras/train/"
         return (src + nodes.image);
       })
       .attr("id", function(d) {return "image_" + d.scatter_id})

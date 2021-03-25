@@ -1,5 +1,6 @@
 .idea*
 results*
+GazemapGen/Training*.png
 
 # CPP ignores
 # Prerequisites
@@ -19,3 +20,7 @@ results*
 *.exe
 *.out
 *.app
+
+
+GazemapGen/Student_data.csv
+Activate/confidences.txt
