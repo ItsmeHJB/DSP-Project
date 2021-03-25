@@ -141,14 +141,17 @@ int main(int argc, char **argv)
     // setup code vars
     // set numnber of interactor rows and columns
     // assuming they're all the same size
-    const int columns = 16;
-    const int rows = 9;
+    const int columns = 18;
+    const int rows = 7;
+    std::cout << "col count: " << columns << ", row count: " << rows << std::endl;
     // setup min fixation time in microseconds
-    IL::Timestamp minFixLen = 0.1;  // 0.1s
+    float minFixLen = 0.1;  // 0.1s
+    std::cout << "Minimum fixation length: " << minFixLen << "s" << std::endl;
     // Convert IL::Timestamp to seconds (us -> s)
     float conversion = 1000000;
     // Length of time measurement takes place for in seconds
-    constexpr time_t measure_length = 10;
+    constexpr time_t measure_length = 60;
+    std::cout << "runtime: " << measure_length << "s" << std::endl;
 
     // Cannot find window name ~ can't progress to using window based stuff
     // retreive window size of browser
@@ -218,7 +221,7 @@ int main(int argc, char **argv)
     }, &gazeVec);
 
     // Store start time in ms for use in calcs later
-    std::chrono::milliseconds::rep milliseconds_since_epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    uint64_t micro_since_epoch = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
     // Get start time for running in seconds
     time_t start;
@@ -276,18 +279,16 @@ int main(int argc, char **argv)
             lastFixTime = gazeEnd.time;
             std::pair<float, float> coords = GetCoordsFromId(gazeStart.id, columns, rows, boxWidth, boxHeight);
 
-            long long start = milliseconds_since_epoch + (gazeStart.time - startTime);  // Stored in ms
-            long long end = milliseconds_since_epoch + (gazeEnd.time - startTime);  // Stored in ms
+            long long fixStartTime = micro_since_epoch + (gazeStart.time - startTime);  // Stored in us
+            long long fixEndTime = micro_since_epoch + (gazeEnd.time - startTime);  // Stored in us
 
             std::string AOINameStart = "Stim";
-            Fixation fix = Fixation(AOINameStart + std::to_string(gazeStart.id), start, 
-                                    duration, end, interFixTime, 
+            Fixation fix = Fixation(AOINameStart + std::to_string(gazeStart.id), fixStartTime, 
+                                    duration, fixEndTime, interFixTime, 
                                     coords.first, coords.second, 
                                     gazeStart.id);
                                     
             fixations.push_back(fix);
-
-            system("pause");
         }
     }
 

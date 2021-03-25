@@ -2,15 +2,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import datetime
 import json
 import os
 import random as rand
 import sys
 from importlib import reload
-from time import time
-import datetime
 
+import datetime
+import time
 import keras
 import numpy as np
 import scipy as sp
@@ -39,12 +38,6 @@ datagen = ImageDataGenerator(
     # rotation_range=5,
     width_shift_range=0.1,
     height_shift_range=0.1)
-
-epoch = datetime.datetime.utcfromtimestamp(0)
-
-
-def unix_time_millis(dt):
-    return (dt - epoch).total_seconds() * 1000.0
 
 
 def select_starting_point(pcad, use_random=False):
@@ -1181,15 +1174,11 @@ def get_samples():
     print("Number of objects in list:", len(object_list))
     print("Length of oo.all_selected_filenames: ", len(oo.all_selected_filenames))
     print("Unique length of oo.all_selected_filenames: ", len(list(set(oo.all_selected_filenames))))
-    curr_time = unix_time_millis(datetime.datetime.now())
+    # Add first time getImages if pressed for gazemap production
+    curr_time = time.time_ns() * 0.001
     if not os.path.isfile('confidences.txt'):
         with open('confidences.txt', 'w') as thefile:
             print('ImageId,Label,Confidence,time,ActLabel,XDAT', file=thefile)
-            print(
-                "{}, {}, {}, {}, {}, {} ".format(0, 0, 0, curr_time, 0, 0),
-                file=thefile)
-    else:
-        with open('confidences.txt', 'a') as thefile:
             print(
                 "{}, {}, {}, {}, {}, {} ".format(0, 0, 0, curr_time, 0, 0),
                 file=thefile)
@@ -1273,7 +1262,7 @@ def update_label():
             oo.pca_distances[file_id, 6] = user_confidence
             print("file_id:", file_id)
             print("oo.pca_distances[file_id,:]", oo.pca_distances[file_id, :])
-            curr_time = unix_time_millis(datetime.datetime.now())
+            curr_time = time.time_ns() * 0.001
 
             print("==>image id {}, label {}, confidence {} ".format(file_id, int(new_label), user_confidence))
             # create confidence file with header row if it does not already exist
