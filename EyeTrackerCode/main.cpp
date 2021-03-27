@@ -7,6 +7,7 @@
 
 // c headers
 // #include <Python.h>
+#include <sys/stat.h>
 
 // c++ headers
 #include <iostream>
@@ -132,6 +133,11 @@ std::pair<float, float> GetCoordsFromId(int id, int columns, int rows, float wid
     return coords;
 }
 
+inline bool exists_test3 (const std::string& name) {
+  struct stat buffer;   
+  return (stat (name.c_str(), &buffer) == 0); 
+}
+
 // Main
 int main(int argc, char **argv)
 {
@@ -219,6 +225,13 @@ int main(int argc, char **argv)
         gazeVec.push_back(gaze);
 
     }, &gazeVec);
+
+    // Wait on start file creation
+    while (!exists_test3("start.txt"))
+    {
+        // Loop
+    }
+    
 
     // Store start time in ms for use in calcs later
     uint64_t micro_since_epoch = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();

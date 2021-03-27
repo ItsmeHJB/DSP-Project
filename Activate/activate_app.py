@@ -27,6 +27,9 @@ app = Flask(__name__)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Disable TF warnings when run.
 sys.setrecursionlimit(2000)
 
+# Globals
+eye_start_file = "../EyeTrackerCode/start.txt"
+
 # datagen = ImageDataGenerator(
 #     rotation_range=22.5,
 #     width_shift_range=0.2,
@@ -1182,6 +1185,10 @@ def get_samples():
             print(
                 "{}, {}, {}, {}, {}, {} ".format(0, 0, 0, curr_time, 0, 0),
                 file=thefile)
+    if not os.path.isfile(eye_start_file):
+        f = open(eye_start_file)
+        f.write("Empty file to start the eye tracker")
+        f.close()
     return json.dumps(object_list)
 
 
@@ -1812,6 +1819,8 @@ def test_accuracy_chart():
 
 
 def shutdown_server():
+    if os.path.exists(eye_start_file):
+        os.remove(eye_start_file)
     func = request.environ.get('werkzeug.server.shutdown')
     if func is None:
         raise RuntimeError('Not running with the Werkzeug Server')
