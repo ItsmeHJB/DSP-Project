@@ -1,11 +1,9 @@
 import numpy as np
 
-from six.moves import urllib
-from six.moves import xrange  # pylint: disable=redefined-builtin
-import tensorflow as tf
 from tensorflow import keras
 
 from sys import platform
+from pathlib import Path
 
 
 def get_label_array(argument):  # Labels stored as digits 0-9 in dataset
@@ -133,28 +131,40 @@ class Options:
 
     test_labels = np.array(temp)
 
-    if running_on_osx:
-        directory_for_test_images = "static/images/cifar10_keras/test"
-        directory_for_train_images = "static/images/cifar10_keras/train"
-        directory_for_trained_model = "logs/trained_logreg_model.ckpt"
+    directory_for_test_images = Path("static/images/cifar10_keras/test")
+    directory_for_train_images = Path("static/images/cifar10_keras/train")
+    directory_for_trained_model = Path("logs/trained_logreg_model.ckpt")
 
-        tsne_file = "./distance_data/tsne_distances.csv"
-        pca_file = "./distance_data/pca_distances.csv"
-        umap_file = "./distance_data/umap_distances.csv"
-        pcatsne_file = "./distance_data/pcatsne_distances.csv"
-        kmeans_centroid_file = "./distance_data/kmeans_centroid_distances.csv"
-    else:
-        # directory_for_test_images = "static\\images\\cifar10\\test"
-        # directory_for_train_images = "static\\images\\cifar10\\train"
-        directory_for_test_images = "static\\images\\cifar10_keras\\test"
-        directory_for_train_images = "static\\images\\cifar10_keras\\train"
-        directory_for_trained_model = "logs\\trained_logreg_model.ckpt"
+    tsne_file = Path("distance_data/tsne_distances.csv")
+    pca_file = Path("distance_data/pca_distances.csv")
+    umap_file = Path("distance_data/umap_distances.csv")
+    pcatsne_file = Path("distance_data/pcatsne_distances.csv")
+    kmeans_centroid_file = Path("distance_data/kmeans_centroid_distances.csv")
 
-        tsne_file = "distance_data\\tsne_distances.csv"
-        pca_file = "distance_data\\pca_distances.csv"
-        umap_file = "distance_data\\umap_distances.csv"
-        pcatsne_file = "distance_data\\pcatsne_distances.csv"
-        kmeans_centroid_file = "distance_data\\kmeans_centroid_distances.csv"
+    eye_tracking_start_file = Path("../EyeTrackerCode/start.txt")
+
+    # if running_on_osx:
+    #     directory_for_test_images = "static/images/cifar10_keras/test"
+    #     directory_for_train_images = "static/images/cifar10_keras/train"
+    #     directory_for_trained_model = "logs/trained_logreg_model.ckpt"
+    #
+    #     tsne_file = "./distance_data/tsne_distances.csv"
+    #     pca_file = "./distance_data/pca_distances.csv"
+    #     umap_file = "./distance_data/umap_distances.csv"
+    #     pcatsne_file = "./distance_data/pcatsne_distances.csv"
+    #     kmeans_centroid_file = "./distance_data/kmeans_centroid_distances.csv"
+    # else:
+    #     # directory_for_test_images = "static\\images\\cifar10\\test"
+    #     # directory_for_train_images = "static\\images\\cifar10\\train"
+    #     directory_for_test_images = "static\\images\\cifar10_keras\\test"
+    #     directory_for_train_images = "static\\images\\cifar10_keras\\train"
+    #     directory_for_trained_model = "logs\\trained_logreg_model.ckpt"
+    #
+    #     tsne_file = "distance_data\\tsne_distances.csv"
+    #     pca_file = "distance_data\\pca_distances.csv"
+    #     umap_file = "distance_data\\umap_distances.csv"
+    #     pcatsne_file = "distance_data\\pcatsne_distances.csv"
+    #     kmeans_centroid_file = "distance_data\\kmeans_centroid_distances.csv"
 
     def __init__(self):
         print("__init__ called")
