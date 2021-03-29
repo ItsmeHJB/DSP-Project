@@ -16,11 +16,5 @@ GazemapGen/Training*.png
 *.gch
 *.pch
 
-# Executables
-*.exe
-*.out
-*.app
-
-
 GazemapGen/Student_data.csv
 Activate/confidences.txt
