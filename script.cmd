@@ -6,10 +6,8 @@ start cmd /k C:\Users\Helen\PycharmProjects\venv\Python38\Scripts\python.exe C:/
 REM Pause for python init
 timeout 10 /nobreak
 start "" http://127.0.0.1:7234/
-REM Press enter to start eye tracker
-pause
 
 REM Starting eye tracker
-start /min C:\Users\Helen\Documents\DSP-Project\EyeTrackerCode\main.exe ^&
+REM start /min ..\EyeTrackerCode\main.exe ^&
 
 exit

@@ -1,3 +1,5 @@
+# Activate config file
+
 import numpy as np
 
 from tensorflow import keras
@@ -139,7 +141,10 @@ class Options:
     pcatsne_file = Path("distance_data/pcatsne_distances.csv")
     kmeans_centroid_file = Path("distance_data/kmeans_centroid_distances.csv")
 
-    eye_tracking_start_file = Path("../EyeTrackerCode/start.txt")
+    eye_tracking_start_file = Path("start.txt")
+
+    # Run eye tracker
+    command = '../EyeTrackerCode/main.exe'.split()
 
     def __init__(self):
         print("__init__ called")
