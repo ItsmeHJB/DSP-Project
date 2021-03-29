@@ -5,6 +5,7 @@ from __future__ import print_function
 import json
 import os
 import random as rand
+import subprocess
 import sys
 from importlib import reload
 
@@ -13,6 +14,7 @@ import time
 import keras
 import numpy as np
 import scipy as sp
+
 from PIL import Image
 from flask import Flask, render_template, request
 from keras.layers import Dense, Activation, Dropout, Flatten, Conv2D, MaxPooling2D
@@ -627,10 +629,8 @@ def keras_current_model_prediction(sample_batch):
 
     # Recieves sample_ref array of cifar10 image names and converts:
     for i in range(len(sample_batch)):
-        if oo.running_on_osx:
-            img = Image.open(oo.directory_for_train_images + '/' + sample_batch[i])
-        else:
-            img = Image.open(oo.directory_for_train_images + '\\' + sample_batch[i])
+        img_file = oo.directory_for_train_images / str(sample_batch[i])
+        img = Image.open(img_file)
         # Create an array with pixel values from image opened
         sample_vector = np.array(img).ravel() / 255
         # Appends to train_images
@@ -670,10 +670,8 @@ def keras_current_convnet_model_prediction(sample_batch):
 
     # Recieves sample_ref array of cifar10 image names and converts:
     for i in range(len(sample_batch)):
-        if oo.running_on_osx:
-            img = Image.open(oo.directory_for_train_images + '/' + sample_batch[i])
-        else:
-            img = Image.open(oo.directory_for_train_images + '\\' + sample_batch[i])
+        img_file = oo.directory_for_train_images / str(sample_batch[i])
+        img = Image.open(img_file)
         # Create an array with pixel values from image opened
         sample_vector = np.array(img).ravel() / 255
         # Appends to train_images
@@ -716,10 +714,8 @@ def appendConfidence(confidence_score):
 
 
 def xTrainEncoder(image_ref):
-    if oo.running_on_osx:
-        img = Image.open(oo.directory_for_train_images + '/' + image_ref)
-    else:
-        img = Image.open(oo.directory_for_train_images + '\\' + image_ref)
+    img_file = oo.directory_for_train_images / str(image_ref)
+    img = Image.open(img_file)
     print("xTrainEncoder: ")
     sample_vector = np.array(img).ravel() / 255
     if len(oo.train_images) > 0:
@@ -731,10 +727,8 @@ def xTrainEncoder(image_ref):
 
 
 def xTrainEncoderConfidence(image_ref, labels):
-    if oo.running_on_osx:
-        img = Image.open(oo.directory_for_train_images + '/' + image_ref)
-    else:
-        img = Image.open(oo.directory_for_train_images + '\\' + image_ref)
+    img_file = oo.directory_for_train_images / str(image_ref)
+    img = Image.open(img_file)
     print("in xTrainEncoderConfidence")
     print(type(img))
     sample_vector = np.array(img) / 255
@@ -761,10 +755,8 @@ def removeData(index):
 
 def overwriteData(image_ref, label, index):
     # Open image from path passed in image_ref
-    if oo.running_on_osx:
-        img = Image.open(oo.directory_for_train_images + '/' + image_ref)
-    else:
-        img = Image.open(oo.directory_for_train_images + '\\' + image_ref)
+    img_file = oo.directory_for_train_images / str(image_ref)
+    img = Image.open(img_file)
     # Create an array with pixel values from image opened
     sample_vector = np.array(img).ravel() / 255
     print(index, oo.train_images.shape)
@@ -1174,6 +1166,7 @@ def get_samples():
     print("Number of objects in list:", len(object_list))
     print("Length of oo.all_selected_filenames: ", len(oo.all_selected_filenames))
     print("Unique length of oo.all_selected_filenames: ", len(list(set(oo.all_selected_filenames))))
+
     # Add first time getImages if pressed for gazemap production
     curr_time = time.time_ns() * 0.001
     if not os.path.isfile('confidences.txt'):
@@ -1182,6 +1175,11 @@ def get_samples():
             print(
                 "{}, {}, {}, {}, {}, {} ".format(0, 0, 0, curr_time, 0, 0),
                 file=thefile)
+
+    if not os.path.isfile(oo.eye_tracking_start_file):
+        with open(oo.eye_tracking_start_file, 'w') as f:
+            f.write('File used to start the eye tracking process')
+
     return json.dumps(object_list)
 
 
@@ -1822,6 +1820,11 @@ def shutdown_server():
 def shutdown():
     shutdown_server()
     output = 'Server shutting down...'
+    # Remove file to stop code
+    if os.path.exists(oo.eye_tracking_start_file):
+        os.remove(oo.eye_tracking_start_file)
+    print("Waiting on eye tracker to write to file")
+    tracker.wait()
     return output
 
 
@@ -1845,11 +1848,19 @@ def index():
     oo.results_file = "./results/" + oo.results_file + ".csv"
     with open(oo.results_file, 'w') as the_file:
         the_file.write('samples,single,inferred,imageaugment,confaugment,userlabels\n')
+
+    global tracker
+    tracker = subprocess.Popen(oo.command)
+
     return render_template("v5.html")
 
 
 if __name__ == "__main__":
     import sys
+
+    # Check eye tracker fine isn't present on start
+    if os.path.isfile(oo.eye_tracking_start_file):
+        os.remove(oo.eye_tracking_start_file)
 
     print("args length ", len(sys.argv), sys.argv)
     port_number = 7234  # default
@@ -1860,7 +1871,6 @@ if __name__ == "__main__":
         print("  Will continue on default port 7234")
     else:
         if (sys.argv[1]) == '--port' and len(sys.argv) == 3:
-            print("Do we get here?")
             port_number = int(sys.argv[2])
 
     print("Running on port number: ", port_number)

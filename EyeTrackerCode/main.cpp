@@ -6,7 +6,7 @@
 // #include <winuser.h>
 
 // c headers
-// #include <Python.h>
+#include <sys/stat.h>
 
 // c++ headers
 #include <iostream>
@@ -24,7 +24,6 @@
 
 
 // Structs and Classes
-
 // Stores gaze events
 class GazeEvent
 {
@@ -132,6 +131,11 @@ std::pair<float, float> GetCoordsFromId(int id, int columns, int rows, float wid
     return coords;
 }
 
+inline bool fileExists (const std::string& name) {
+  struct stat buffer;   
+  return (stat (name.c_str(), &buffer) == 0); 
+}
+
 // Main
 int main(int argc, char **argv)
 {
@@ -220,6 +224,13 @@ int main(int argc, char **argv)
 
     }, &gazeVec);
 
+    // Wait on start file creation
+    while (!fileExists("start.txt"))
+    {
+        // Loop
+    }
+    
+
     // Store start time in ms for use in calcs later
     uint64_t micro_since_epoch = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
@@ -232,11 +243,11 @@ int main(int argc, char **argv)
     std::cout << "Starting interaction library update loop.\n";
     IL::Timestamp lastFixTime = 0;
 
-    while (time (NULL) < start + measure_length)
+    while (fileExists("start.txt"))
     {
         intlib->WaitAndUpdate();
     }
-
+    
     std::cout << "Finished monitoring" << std::endl;
 
     // Setup start time
