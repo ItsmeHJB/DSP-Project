@@ -1199,7 +1199,7 @@ def update_label():
     node_image = str(request.args.get('image'))
 
     print("node_image:", node_image)
-    user_confidence = round(float(request.args.get('user_confidence')), 2)  # Get user_confidence and round to 2 DP.
+    user_confidence = round(float(request.args.get('user_confidence')))  # Binary confidence [0, 1]
 
     new_label = int(request.args.get('new_label'))
     if new_label == -1:
