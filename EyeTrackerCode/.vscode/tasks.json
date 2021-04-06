@@ -9,6 +9,7 @@
                 "/MD",
                 "/DEBUG:FULL",
                 "/std:c++17",
+                "/wd4996",
                 "/I",
                 "include",
                 "${file}",

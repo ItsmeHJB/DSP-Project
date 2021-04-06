@@ -19,6 +19,7 @@
 #include <chrono>
 
 // Custom headers
+// These cause warning C4996 to trigger due to deprecated functionality - disabled in tasks.json using "/wd4996" during compiliation
 #include <interaction_lib/InteractionLib.h>
 #include <interaction_lib/misc/InteractionLibPtr.h>
 
@@ -145,8 +146,8 @@ int main(int argc, char **argv)
     // setup code vars
     // set numnber of interactor rows and columns
     // assuming they're all the same size
-    const int columns = 18;
-    const int rows = 7;
+    const int columns = 30;
+    const int rows = 18;
     std::cout << "col count: " << columns << ", row count: " << rows << std::endl;
     // setup min fixation time in microseconds
     float minFixLen = 0.1;  // 0.1s
@@ -157,18 +158,11 @@ int main(int argc, char **argv)
     constexpr time_t measure_length = 60;
     std::cout << "runtime: " << measure_length << "s" << std::endl;
 
-    // Cannot find window name ~ can't progress to using window based stuff
-    // retreive window size of browser
-    // HWND hwnd = FindWindowA(NULL, );
-    // RECT rect;
-    // GetWindowRect(hwnd, &rect);
-    // float width = rect.right - rect.left;
-    // float height = rect.bottom - rect.top;
-
     // Set up window area
     const float windowWidth = 1920;
     const float windowHeight = 1080;
     const float offset = 0.0f;  // Coords start in top left area
+    std::cout << "Window size: " << windowWidth << "x" << windowHeight << std::endl;
 
     intlib->CoordinateTransformAddOrUpdateDisplayArea(windowWidth, windowHeight);
     intlib->CoordinateTransformSetOriginOffset(offset, offset);
