@@ -154,9 +154,6 @@ int main(int argc, char **argv)
     std::cout << "Minimum fixation length: " << minFixLen << "s" << std::endl;
     // Convert IL::Timestamp to seconds (us -> s)
     float conversion = 1000000;
-    // Length of time measurement takes place for in seconds
-    constexpr time_t measure_length = 60;
-    std::cout << "runtime: " << measure_length << "s" << std::endl;
 
     // Set up window area
     const float windowWidth = 1920;

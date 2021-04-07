@@ -1,11 +1,11 @@
 import pandas as pd
-import numpy as np
+
 from matplotlib import pyplot as plt
 from matplotlib import collections  as mc
-from matplotlib import markers as mark
-import matplotlib.image as mpimg
-from matplotlib import patches as patch
-from matplotlib.collections import PatchCollection
+from pathlib import Path
+from random import random
+from os import mkdir
+
 
 # %matplotlib inline
 
@@ -78,6 +78,14 @@ plot for 1 trial so we see what it looks like
 # fig.savefig('Example' + user_id + '_' + str(xdat) + '.png')
 
 # Code to iterate through gazemap solutions
+
+# Training/Test split
+train_chance = 0.8  # 80% of images are training
+# Check for training and test folders
+if not Path("training").is_dir():
+    mkdir(Path("training"))
+if not Path("test").is_dir():
+    mkdir(Path("test"))
 
 timerIndex = 0
 lastLabelTime = summary_data.time[0]  # Get labeling start time
@@ -167,6 +175,9 @@ for imgIndex in range(1, len(summary_data)):
         ax.set_ylim([1080, 0])
         ax.axis('off')
         # plt.show()
-        fig.savefig('Training' + str(summary_data.ImageId[imgIndex]) + '.png')
+        if random() > 0.8:
+            fig.savefig(Path('test/' + str(summary_data.ImageId[imgIndex]) + '.png'))
+        else:
+            fig.savefig(Path('training/' + str(summary_data.ImageId[imgIndex]) + '.png'))
 
     lastLabelTime = currLabelTime

@@ -1,64 +1,67 @@
 import tensorflow as tf
 
-from tensorflow.keras import datasets, layers, models
+from tensorflow.keras import preprocessing, layers, models
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 
-# Import data
-(train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
-
-# Normalize pixel values to be between 0 and 1
-train_images, test_images = train_images / 255.0, test_images / 255.0
-
-class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer',
-               'dog', 'frog', 'horse', 'ship', 'truck']
-
-# Plot a few images
-plt.figure(figsize=(10,10))
-for i in range(25):
-    plt.subplot(5,5,i+1)
-    plt.xticks([])
-    plt.yticks([])
-    plt.grid(False)
-    plt.imshow(train_images[i], cmap=plt.cm.binary)
-    # The CIFAR labels happen to be arrays,
-    # which is why you need the extra index
-    plt.xlabel(class_names[train_labels[i][0]])
-plt.show()
 
 # Set up CNN base using a stack of ConvSD and MaxPooling2D layers
 model = models.Sequential()
+# Convolution
 model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)))
+# Pooling
 model.add(layers.MaxPooling2D((2, 2)))
+# 2nd layer
 model.add(layers.Conv2D(64, (3, 3), activation='relu'))
 model.add(layers.MaxPooling2D((2, 2)))
-model.add(layers.Conv2D(64, (3, 3), activation='relu'))
 
 # Display archtecture - output is a 3D tensor of shape
 model.summary()
 
 # Adding dense layers on top - these do the classification
 model.add(layers.Flatten())
-model.add(layers.Dense(64, activation='relu'))
-model.add(layers.Dense(10))  # 10 outputs possiblities with cifar
+model.add(layers.Dense(128, activation='relu'))
+model.add(layers.Dense(1, activation='sigmoid'))
 
 model.summary()
 
-# Compile and train the model
+# Compile the model ready for training
 model.compile(optimizer='adam',
-              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              loss='binary_crossentropy',
               metrics=['accuracy'])
 
-history = model.fit(train_images, train_labels, epochs=10,
-                    validation_data=(test_images, test_labels))
+train_datagen = ImageDataGenerator(rescale=1./255,
+                                   shear_range=0.2,
+                                   zoom_range=0.2,
+                                   horizontal_flip=True)
 
-# Evaluate the model
-plt.plot(history.history['accuracy'], label='accuracy')
-plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.ylim([0.5, 1])
-plt.legend(loc='lower right')
+test_datagen = ImageDataGenerator(rescale = 1./255)
 
-test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=2)
+train_images = train_datagen.flow_from_directory(Path("../GazemapGen/training"),
+                                                 target_size=(64,64),
+                                                 batch_size=32,
+                                                 class_mode='binary')
 
-print(test_acc)
+test_images = test_datagen.flow_from_directory(Path("../GazemapGen/test"),
+                                               target_size=(64,64),
+                                               batch_size=32,
+                                               class_mode='binary')
+
+model.fit_generator(train_images,
+                    nb_epoch=10,
+                    validation_data=test_images,)
+
+
+# # Evaluate the model
+# plt.plot(history.history['accuracy'], label='accuracy')
+# plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
+# plt.xlabel('Epoch')
+# plt.ylabel('Accuracy')
+# plt.ylim([0.5, 1])
+# plt.legend(loc='lower right')
+#
+# test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=2)
+#
+# print(test_acc)
