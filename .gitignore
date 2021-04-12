@@ -18,3 +18,5 @@ GazemapGen/Training*.png
 
 GazemapGen/Student_data.csv
 Activate/confidences.txt
+GazemapGen/test/*
+GazemapGen/training/*
