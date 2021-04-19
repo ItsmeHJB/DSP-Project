@@ -146,8 +146,8 @@ int main(int argc, char **argv)
     // setup code vars
     // set numnber of interactor rows and columns
     // assuming they're all the same size
-    const int columns = 30;
-    const int rows = 18;
+    const int columns = 60;
+    const int rows = 40;
     std::cout << "col count: " << columns << ", row count: " << rows << std::endl;
     // setup min fixation time in microseconds
     float minFixLen = 0.1;  // 0.1s

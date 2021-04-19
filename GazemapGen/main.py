@@ -187,3 +187,6 @@ for imgIndex in range(1, len(label_data)):
             fig.savefig(Path('training/' + conf_string + "_" + str(label_data.ImageId[imgIndex]) + '.png'))
 
     lastLabelTime = currLabelTime
+
+
+
