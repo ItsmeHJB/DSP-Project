@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from matplotlib import collections  as mc
 from pathlib import Path
 from random import random
-from os import mkdir
+from os import mkdir, remove
 
 
 # %matplotlib inline
@@ -15,7 +15,8 @@ print("Fixation data")
 print(fix_data.head())
 
 # Read in confidence data
-label_data = pd.read_csv('../Activate/confidences.txt')
+gaze_file = Path('../Activate/confidences.txt')
+label_data = pd.read_csv(gaze_file)
 print("Confidence data")
 print(label_data.tail())
 
@@ -188,5 +189,6 @@ for imgIndex in range(1, len(label_data)):
 
     lastLabelTime = currLabelTime
 
-
+# Delete gaze data
+remove("Student_data.csv")
 
