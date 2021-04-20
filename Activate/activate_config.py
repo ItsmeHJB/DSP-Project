@@ -49,10 +49,6 @@ class Options:
     batch_size = 10
     batch_total = 0
     test_size = 0
-    total_test_pool = 10000
-    total_train_pool = 50000
-
-    number_of_classes = 10
 
     epochs = 0
     batches_in = 0
@@ -108,6 +104,11 @@ class Options:
     (train_images, train_labels), (test_images, test_labels) = keras.datasets.cifar10.load_data()
     # Normalise vals
     train_images, test_images = train_images / 255.0, test_images / 255.0
+
+    total_test_pool = len(test_images)
+    total_train_pool = len(train_images)
+
+    number_of_classes = 10
 
     # Reshape
     train_images = np.delete(train_images, np.s_[total_train_pool:], axis=0)
