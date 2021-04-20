@@ -85,8 +85,17 @@ train_chance = 0.8  # 80% of images are training
 # Check for training and test folders
 if not Path("training").is_dir():
     mkdir(Path("training"))
+if not Path("training/conf").is_dir():
+    mkdir(Path("training/conf"))
+if not Path("training/non_conf").is_dir():
+    mkdir(Path("training/non_conf"))
+
 if not Path("test").is_dir():
     mkdir(Path("test"))
+if not Path("test/conf").is_dir():
+    mkdir(Path("test/conf"))
+if not Path("test/non_conf").is_dir():
+    mkdir(Path("test/non_conf"))
 
 timerIndex = 0
 lastLabelTime = label_data.time[0]  # Get labeling start time
@@ -96,9 +105,9 @@ for imgIndex in range(1, len(label_data)):
     conf = label_data.Confidence[imgIndex]
     conf_string = ""
     if conf == 1:
-        conf_string = "conf"
+        conf_dir = "conf"
     else:
-        conf_string = "non-conf"
+        conf_dir = "non_conf"
 
     # Setup lists for lines
     mark_colors = []
@@ -183,9 +192,9 @@ for imgIndex in range(1, len(label_data)):
         ax.axis('off')
         # plt.show()
         if random() > 0.8:
-            fig.savefig(Path('test/' + conf_string + "_" + str(label_data.ImageId[imgIndex]) + '.png'))
+            fig.savefig(Path('test/' + conf_dir + "/" + str(label_data.ImageId[imgIndex]) + '.png'))
         else:
-            fig.savefig(Path('training/' + conf_string + "_" + str(label_data.ImageId[imgIndex]) + '.png'))
+            fig.savefig(Path('training/' + conf_dir + "/" + str(label_data.ImageId[imgIndex]) + '.png'))
 
     lastLabelTime = currLabelTime
 
