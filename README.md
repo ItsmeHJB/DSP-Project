@@ -1,12 +1,12 @@
- # DSP Project - Harrison Bennion
- ##Python Interpreter
+# DSP Project - Harrison Bennion
+## Python Interpreter
 Python interpreter version: **Python 3.8.5**
 
 To install the modules using pip:
 
 `pip install -r requirements`
 
-##C++ Compiler
+## C++ Compiler
 EyeTrackerCode was compiled using Visual Studio 2019's compiler: **C/C++ Optimizing Compiler Version 19.28.29333 for x64**
 
 Within EyeTrackerCode/.vscode/ directory, there are VS Code files to complete these tasks.
@@ -21,7 +21,7 @@ This currently points to my local venv, but you can update this depending on usa
 
 After stating ActiVAte, it waits 10 seconds for set up before opening the local host page on a browser.
 
-##ActiVAte
+## ActiVAte
 A fork of the code by Legg *et al.* (2019).
 
 Link: [activate](https://gitlab.uwe.ac.uk/pa-legg/activate)
@@ -34,7 +34,7 @@ If the eye tracking executable does not run on your PC, this will likely cause e
 
 During labelling, the labels and confidence scores will be recorded to file for use by the GazemapGen tool.
 
-###Changing dataset
+### Changing dataset
 In order to change the dataset here, code will need to be changed in a few key places.
 1. activate_config.py
     1. Within the *Options* module, updated the train_images, train_labels, test_images and test_labels variables.
