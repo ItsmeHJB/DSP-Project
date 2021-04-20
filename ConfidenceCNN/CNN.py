@@ -40,58 +40,60 @@ def create_data_set(path):
 
 
 # # Set up starter vals
-# IMAGE_WIDTH = 1920
-# IMAGE_HEIGHT = 1080
-# N_EPOCH = 10
-# learning_rate = 1e-3
-# MODEL_NAME = "Test model"
+IMAGE_WIDTH = 1920
+IMAGE_HEIGHT = 1080
+N_EPOCH = 10
+learning_rate = 1e-3
+MODEL_NAME = "Test model"
 #
 # Get starter data
 print("Creating dataset")
-data = create_data_set(Path("../GazemapGen/training"))
-train_images = data[0]
-train_labels = data[1]
-print(len(train_images))
-data = create_data_set(Path("../GazemapGen/test"))
-test_images = data[0]
-test_labels = data[1]
-print(len(test_images))
+train_data = create_data_set(Path("../GazemapGen/training"))
+test_data = create_data_set(Path("../GazemapGen/test"))
+# data = create_data_set(Path("../GazemapGen/training"))
+# train_images = data[0]
+# train_labels = data[1]
+# print(len(train_images))
+# data = create_data_set(Path("../GazemapGen/test"))
+# test_images = data[0]
+# test_labels = data[1]
+# print(len(test_images))
 
-plt.figure(figsize=(10,10))
-for i in range(25):
-    plt.subplot(5,5,i+1)
-    plt.xticks([])
-    plt.yticks([])
-    plt.grid(False)
-    plt.imshow(train_images[i], cmap=plt.cm.binary)
-    # The CIFAR labels happen to be arrays,
-    # which is why you need the extra index
-    plt.xlabel(train_labels[i])
-plt.show()
+# plt.figure(figsize=(10,10))
+# for i in range(25):
+#     plt.subplot(5,5,i+1)
+#     plt.xticks([])
+#     plt.yticks([])
+#     plt.grid(False)
+#     plt.imshow(train_images[i], cmap=plt.cm.binary)
+#     # The CIFAR labels happen to be arrays,
+#     # which is why you need the extra index
+#     plt.xlabel(train_labels[i])
+# plt.show()
 
 # https://www.tensorflow.org/tutorials/images/cnn
-#
-# print("Creating model")
-# # Create model
-# img_shape = train_data[0][0].shape
-# print(img_shape)
-#
-# convnet = input_data(img_shape, name='inputs')
-#
-# convnet = conv_2d(convnet, 64, 3, activation='relu')
-# convent = max_pool_2d(convnet, 2)
-#
-# convnet = conv_2d(convnet, 32, 3, activation='relu')
-# convent = max_pool_2d(convnet, 2)
-#
-# convnet = fully_connected(convnet, 512, activation='relu')
-#
-# convnet = fully_connected(convnet, 2, activation='sigmoid')
-# convnet = regression(convnet, optimizer='adam',
-#                      name='targets', learning_rate=learning_rate,
-#                      loss='binary_crossentropy', metric='accuracy')
-#
-# model = tflearn.DNN(convnet, tensorboard_dir='log')
+
+print("Creating model")
+# Create model
+img_shape = train_data[0][0].shape
+print(img_shape)
+
+convnet = input_data(img_shape, name='inputs')
+
+convnet = conv_2d(convnet, 64, 3, activation='relu')
+convent = max_pool_2d(convnet, 2)
+
+convnet = conv_2d(convnet, 32, 3, activation='relu')
+convent = max_pool_2d(convnet, 2)
+
+convnet = fully_connected(convnet, 512, activation='relu')
+
+convnet = fully_connected(convnet, 2, activation='sigmoid')
+convnet = regression(convnet, optimizer='adam',
+                     name='targets', learning_rate=learning_rate,
+                     loss='binary_crossentropy', metric='accuracy')
+
+model = tflearn.DNN(convnet, tensorboard_dir='log')
 
 # Get images and labels in separate vars
 train_img = np.array([i[0] for i in train_data])
