@@ -3,9 +3,11 @@ var user_label_counter = 0;
 var total_user_labels = 0;
 var user_label_array = [];
 
-var cifar_labels = ["Airplane", "Automobile", "Bird", "Cat", "Deer", "Dog", "Frog", "Horse", "Ship", "Truck"];
+var labels = ["Airplane", "Automobile", "Bird", "Cat", "Deer", "Dog", "Frog", "Horse", "Ship", "Truck"];
 var our_ten_colours = ['#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a'];
 //var our_ten_colours = ['#8dd3c7','#ffffb3','#bebada','#fb8072','#80b1d3','#fdb462','#b3de69','#fccde5','#d9d9d9','#bc80bd'];
+
+var train_dir = "/static/images/cifar10_keras/train/"
 
 var box_width = 100;
 var box_height = 350;
@@ -75,7 +77,7 @@ function create_classifier_pane(placement) {
             .style("font-size", 16)
             .style('fill', "white")
             .style("opacity", 0.7)
-            .text(cifar_labels[i])
+            .text(labels[i])
 
       var region_values = [(1 + (step * i)), 1, box_width+(1 + (step * i)), box_height+1, i]
       class_regions.push(region_values)
@@ -132,8 +134,7 @@ function update_classifier_pane(images, batchsize) {
 
   nodeEnter.append("svg:image")
       .attr("xlink:href",  function(nodes) {
-          var src = "/static/images/cifar10_keras/train/"
-        return (src + nodes.image);
+        return (train_dir + nodes.image);
       })
       .attr("id", function(d) {return "image_" + d.scatter_id})
       .attr("label", function(d) {return d.label})
@@ -382,8 +383,7 @@ function update_classifier_pane_with_single_instance(images, batchsize, batch_to
 
   nodeEnter.append("svg:image")
       .attr("xlink:href",  function(nodes) {
-          var src = "/static/images/cifar10_keras/train/"
-        return (src + nodes.image);
+        return (train_dir + nodes.image);
       })
       .attr("id", function(d) {return "image_" + d.scatter_id})
       .attr("label", function(d) {return d.label})
@@ -650,8 +650,7 @@ function update_classifier_pane_predict(node_data, batchsize) {
 
   nodeEnter.append("svg:image")
       .attr("xlink:href",  function(nodes) {
-          var src = "/static/images/cifar10_keras/train/"
-        return (src + nodes.image);
+        return (train_dir + nodes.image);
       })
       .attr("id", function(d) {return "image_" + d.scatter_id})
       .attr("label", function(d) {return d.label})
