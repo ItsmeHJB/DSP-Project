@@ -1,11 +1,11 @@
 import pandas as pd
-import numpy as np
+
 from matplotlib import pyplot as plt
 from matplotlib import collections  as mc
-from matplotlib import markers as mark
-import matplotlib.image as mpimg
-from matplotlib import patches as patch
-from matplotlib.collections import PatchCollection
+from pathlib import Path
+from random import random
+from os import mkdir, remove
+
 
 # %matplotlib inline
 
@@ -15,9 +15,10 @@ print("Fixation data")
 print(fix_data.head())
 
 # Read in confidence data
-summary_data = pd.read_csv('../Activate/confidences.txt')
+gaze_file = Path('../Activate/confidences.txt')
+label_data = pd.read_csv(gaze_file)
 print("Confidence data")
-print(summary_data.tail())
+print(label_data.tail())
 
 '''
 plot for 1 trial so we see what it looks like
@@ -32,7 +33,7 @@ plot for 1 trial so we see what it looks like
 # aoi = fix_data.AOI[(fix_data.File == user_id) & (fix_data.XDAT == xdat)].values
 # aoi_name = fix_data.AOIName[(fix_data.File == user_id) & (fix_data.XDAT == xdat)].values
 #
-# correct_op = summary_data.act_label[summary_data.XDAT == xdat].values[0]
+# correct_op = label_data.act_label[label_data.XDAT == xdat].values[0]
 #
 # sizes = (duration + 0.1) * 80
 # line_colors = []
@@ -79,11 +80,34 @@ plot for 1 trial so we see what it looks like
 
 # Code to iterate through gazemap solutions
 
+# Training/Test split
+train_chance = 0.8  # 80% of images are training
+# Check for training and test folders
+if not Path("training").is_dir():
+    mkdir(Path("training"))
+if not Path("training/conf").is_dir():
+    mkdir(Path("training/conf"))
+if not Path("training/non_conf").is_dir():
+    mkdir(Path("training/non_conf"))
+
+if not Path("test").is_dir():
+    mkdir(Path("test"))
+if not Path("test/conf").is_dir():
+    mkdir(Path("test/conf"))
+if not Path("test/non_conf").is_dir():
+    mkdir(Path("test/non_conf"))
+
 timerIndex = 0
-lastLabelTime = summary_data.time[0]  # Get labeling start time
+lastLabelTime = label_data.time[0]  # Get labeling start time
 # For each image that was classified
-for imgIndex in range(1, len(summary_data)):
-    currLabelTime = summary_data.time[imgIndex]
+for imgIndex in range(1, len(label_data)):
+    currLabelTime = label_data.time[imgIndex]
+    conf = label_data.Confidence[imgIndex]
+    conf_string = ""
+    if conf == 1:
+        conf_dir = "conf"
+    else:
+        conf_dir = "non_conf"
 
     # Setup lists for lines
     mark_colors = []
@@ -121,7 +145,7 @@ for imgIndex in range(1, len(summary_data)):
         inter_fix = fix_data.InterfixDur[timerIndex]
         aoi = fix_data.AOI[timerIndex]
         aoi_name = fix_data.AOIName[timerIndex]
-        correct_op = summary_data.ActLabel[imgIndex]
+        correct_op = label_data.ActLabel[imgIndex]
         sizes = (duration + 0.1) * 80
 
         # Not working correctly atm
@@ -167,6 +191,13 @@ for imgIndex in range(1, len(summary_data)):
         ax.set_ylim([1080, 0])
         ax.axis('off')
         # plt.show()
-        fig.savefig('Training' + str(summary_data.ImageId[imgIndex]) + '.png')
+        if random() > 0.8:
+            fig.savefig(Path('test/' + conf_dir + "/" + str(label_data.ImageId[imgIndex]) + '.png'))
+        else:
+            fig.savefig(Path('training/' + conf_dir + "/" + str(label_data.ImageId[imgIndex]) + '.png'))
 
     lastLabelTime = currLabelTime
+
+# Delete gaze data
+remove("Student_data.csv")
+

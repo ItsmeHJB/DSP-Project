@@ -1,64 +1,87 @@
-import tensorflow as tf
+# Simple CNN to predict confidence in a binary setting
 
-from tensorflow.keras import datasets, layers, models
+import os
+from pathlib import Path
 import matplotlib.pyplot as plt
+import tensorflow as tf
+from sklearn.metrics import roc_curve, auc
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-# Import data
-(train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
+# Get training images from dirs
+train_conf_dir = os.path.join(Path("../GazemapGen/training/conf"))
+train_non_conf_dir = os.path.join(Path("../GazemapGen/training/non_conf"))
 
-# Normalize pixel values to be between 0 and 1
-train_images, test_images = train_images / 255.0, test_images / 255.0
+# Get test images from dirs
+test_conf_dir = os.path.join(Path("../GazemapGen/test/conf"))
+test_non_conf_dir = os.path.join(Path("../GazemapGen/test/non_conf"))
 
-class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer',
-               'dog', 'frog', 'horse', 'ship', 'truck']
+# Print total images
+print('total training confident images:', len(os.listdir(train_conf_dir)))
+print('total training non-confident images:', len(os.listdir(train_non_conf_dir)))
+print('total validation confident images:', len(os.listdir(test_conf_dir)))
+print('total validation non-confident images:', len(os.listdir(test_non_conf_dir)))
 
-# Plot a few images
-plt.figure(figsize=(10,10))
-for i in range(25):
-    plt.subplot(5,5,i+1)
-    plt.xticks([])
-    plt.yticks([])
-    plt.grid(False)
-    plt.imshow(train_images[i], cmap=plt.cm.binary)
-    # The CIFAR labels happen to be arrays,
-    # which is why you need the extra index
-    plt.xlabel(class_names[train_labels[i][0]])
-plt.show()
+# Data pre-processing
+# All images rescaled to 1/225
+train_datagen = ImageDataGenerator(rescale=1 / 255)
+validation_datagen = ImageDataGenerator(rescale=1 / 255)
 
-# Set up CNN base using a stack of ConvSD and MaxPooling2D layers
-model = models.Sequential()
-model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)))
-model.add(layers.MaxPooling2D((2, 2)))
-model.add(layers.Conv2D(64, (3, 3), activation='relu'))
-model.add(layers.MaxPooling2D((2, 2)))
-model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+# Flow training images in batches of 20
+train_generator = train_datagen.flow_from_directory(
+    Path("../GazemapGen/training"),  # This is the source directory for training images
+    classes=['conf', 'non_conf'],
+    target_size=(200, 200),  # All images will be resized to 200x200
+    batch_size=20,
+    # Use binary labels
+    class_mode='binary')
 
-# Display archtecture - output is a 3D tensor of shape
-model.summary()
+# Flow validation images in batches of 10
+validation_generator = validation_datagen.flow_from_directory(
+    Path("../GazemapGen/test"),  # This is the source directory for training images
+    classes=['conf', 'non_conf'],
+    target_size=(200, 200),  # All images will be resized to 200x200
+    batch_size=10,
+    # Use binary labels
+    class_mode='binary',
+    shuffle=False)
 
-# Adding dense layers on top - these do the classification
-model.add(layers.Flatten())
-model.add(layers.Dense(64, activation='relu'))
-model.add(layers.Dense(10))  # 10 outputs possiblities with cifar
-
-model.summary()
-
-# Compile and train the model
-model.compile(optimizer='adam',
-              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+# Build model using flattening and dense layers, 1 in non_conf, 0 is conf here
+model = tf.keras.models.Sequential([tf.keras.layers.Flatten(input_shape=(200, 200, 3)),
+                                    tf.keras.layers.Dense(128, activation=tf.nn.relu),
+                                    tf.keras.layers.Dense(1, activation=tf.nn.sigmoid)])
+model.summary()  # Print model shape
+# Compile the model together
+model.compile(optimizer=tf.optimizers.Adam(),  # Adam outmates the learning-rate tuning for us. He's a very kind person.
+              loss='binary_crossentropy',
               metrics=['accuracy'])
 
-history = model.fit(train_images, train_labels, epochs=10,
-                    validation_data=(test_images, test_labels))
+# Fit the model to the images we have
+history = model.fit(train_generator,
+                    steps_per_epoch=8,
+                    epochs=15,
+                    verbose=1,
+                    validation_data=validation_generator,
+                    validation_steps=8)
 
-# Evaluate the model
-plt.plot(history.history['accuracy'], label='accuracy')
-plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.ylim([0.5, 1])
-plt.legend(loc='lower right')
+# Test the accuracy
+model.evaluate(validation_generator)
 
-test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=2)
+STEP_SIZE_TEST = validation_generator.n // validation_generator.batch_size
+validation_generator.reset()
+preds = model.predict(validation_generator,
+                      verbose=1)
 
-print(test_acc)
+fpr, tpr, _ = roc_curve(validation_generator.classes, preds)
+roc_auc = auc(fpr, tpr)
+plt.figure()
+lw = 2
+plt.plot(fpr, tpr, color='darkorange',
+         lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)
+plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic')
+plt.legend(loc="lower right")
+plt.show()
