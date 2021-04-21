@@ -1,4 +1,4 @@
-# TODO: Add to README, add comment to gazemapgen
+# GazeGenSpoof.py - Creates spoof confidences.txt and StudentData.csv files
 import csv
 from pathlib import Path
 import os

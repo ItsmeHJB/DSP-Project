@@ -70,3 +70,10 @@ Uses the gaze data alsong side the confidence data to produce gazemaps which are
 
 The current distrubuiton is a simple 80//20.
 
+## Testing
+Contains code for testing.
+
+Currently only contains output spoofing code for ActiVAte and the EyeTrackerCode
+
+All variables within the file can be edited and fiddled with for the required output.
+
