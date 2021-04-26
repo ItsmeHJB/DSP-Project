@@ -6,9 +6,7 @@ from pathlib import Path
 from random import random
 from os import mkdir, remove
 
-
-# %matplotlib inline
-
+# THIS DATA CAN BE SPOOFED USING ../testing/GazeGenSpoof.py
 # Read in eye data
 fix_data = pd.read_csv('Student_data.csv')
 print("Fixation data")
