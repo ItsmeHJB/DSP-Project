@@ -3,8 +3,6 @@
 import numpy as np
 
 from tensorflow import keras
-
-from sys import platform
 from pathlib import Path
 
 
@@ -58,10 +56,6 @@ class Options:
     id_key = []
     total_test_sample_ref = []
     total_train_sample_ref = []
-    train_images = np.zeros([0, 784])
-    train_labels = np.zeros([0, 10])
-    test_images = []  # np.zeros([1,784])
-    test_labels = []  # np.zeros([1,10])
 
     temp_test = []
     confidence_scores = []
@@ -91,13 +85,6 @@ class Options:
     point_select = []
     use_sample_generator = False
     use_confidence = False
-
-    if platform == "linux" or platform == "linux2":
-        running_on_osx = True
-    elif platform == "darwin":
-        running_on_osx = True
-    elif platform == "win32":
-        running_on_osx = False
 
     # Load data set
     # (training image, training lables), (test images, test labels)

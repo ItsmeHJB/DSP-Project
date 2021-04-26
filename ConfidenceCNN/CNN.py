@@ -57,8 +57,8 @@ model.compile(optimizer=tf.optimizers.Adam(),  # Adam outmates the learning-rate
 
 # Fit the model to the images we have
 history = model.fit(train_generator,
-                    steps_per_epoch=5,
-                    epochs=10,
+                    steps_per_epoch=4,
+                    epochs=8,
                     verbose=1,
                     validation_data=validation_generator,
                     validation_steps=8)
