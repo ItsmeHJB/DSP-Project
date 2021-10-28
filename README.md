@@ -24,6 +24,8 @@ After stating ActiVAte, it waits 10 seconds for set up before opening the local 
 ## ActiVAte
 A fork of the code by Legg *et al.* (2019).
 
+*This code can only be accessed by those with access to the UWE servers*
+
 Link: [activate](https://gitlab.uwe.ac.uk/pa-legg/activate)
 
 Run activate_app.py to start the server, a link should print out after set up to allow for the ActiVAte to be opened with ease.
